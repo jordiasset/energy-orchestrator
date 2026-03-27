@@ -142,6 +142,41 @@ function Pg1(p){
         <ResponsiveContainer width="100%" height={130}><AreaChart data={pFlow}><defs><linearGradient id="pG" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={W} stopOpacity={.3}/><stop offset="95%" stopColor={W} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="hora" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} interval={3}/><YAxis tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false}/><Tooltip {...TT(p)}/><Area type="monotone" dataKey="pv" stroke={W} fill="url(#pG)" strokeWidth={2} name="FV"/><Area type="monotone" dataKey="red" stroke={A} fill={`${A}12`} strokeWidth={1.5} name="Red"/><Line type="monotone" dataKey="consumo" stroke={p.tx} strokeWidth={2} dot={false}/></AreaChart></ResponsiveContainer>
       </Cd>
     </div>
+    {/* Strategy of the Day */}
+    <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:14,marginBottom:10,borderLeft:`4px solid ${A}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${A}15,${P}15)`,display:"flex",alignItems:"center",justifyContent:"center"}}><Brain size={16} color={A}/></div>
+        <div><div style={{fontSize:14,fontWeight:700}}>Estrategia de Consumo - Hoy</div><div style={{fontSize:10,color:p.tx2}}>Generada por Seinon IA a las 00:05 - Actualizada con intradiario a las 12:15</div></div>
+        <div style={{marginLeft:"auto",display:"flex",gap:4}}><Bg text="Optimizando" color={G}/><Bg text="Ahorro est. 29.40" color={G}/></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:0,marginBottom:12}}>
+        {decs.map((d,i)=>{const Ic=d.ic;const isNow=HR>=parseInt(d.h)&&HR<(parseInt(decs[i+1]?.h)||24);return(
+          <div key={i} style={{padding:"10px 8px",textAlign:"center",background:isNow?`${d.c}10`:i%2===0?p.sf2:"transparent",borderRadius:isNow?6:0,border:isNow?`2px solid ${d.c}`:"2px solid transparent",position:"relative"}}>
+            {isNow&&<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:7,fontWeight:700,color:d.c,background:p.sf,padding:"1px 6px",borderRadius:8,border:`1px solid ${d.c}`}}>AHORA</div>}
+            <Ic size={18} color={d.c} style={{margin:"0 auto 4px",display:"block"}}/>
+            <div style={{fontSize:9,fontWeight:700,color:d.c}}>{d.h}</div>
+            <div style={{fontSize:9,fontWeight:600,marginTop:2}}>{d.a}</div>
+            <div style={{fontSize:8,color:p.tx2,marginTop:1}}>{d.f}</div>
+            <div style={{fontSize:11,fontWeight:700,color:G,marginTop:4}}>{d.s}</div>
+          </div>
+        )})}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+        <div style={{padding:10,borderRadius:6,background:`${A}06`,border:`1px solid ${A}12`}}>
+          <div style={{fontSize:10,fontWeight:600,color:A,marginBottom:4}}>🌙 Madrugada (ahora mismo)</div>
+          <div style={{fontSize:10,lineHeight:1.4}}>El algoritmo ha detectado que OMIE marca precios de <strong>0.03/kWh</strong> hasta las 06:00. Se esta cargando la bateria al maximo aprovechando tarifa valle. SoC actual: <strong>{p.socN}%</strong>. Objetivo: llegar al 95% antes del amanecer para cubrir el pico de la tarde sin comprar red cara.</div>
+        </div>
+        <div style={{padding:10,borderRadius:6,background:`${W}06`,border:`1px solid ${W}12`}}>
+          <div style={{fontSize:10,fontWeight:600,color:W,marginBottom:4}}>☀️ Mediodia (previsto)</div>
+          <div style={{fontSize:10,lineHeight:1.4}}>La prevision meteorologica indica <strong>cielo despejado</strong> con produccion FV estimada de <strong>92kW pico</strong>. El orquestador desconectara la red a las 10:00 y alimentara toda la planta con FV. El excedente (estimado 35kW) ira directo a recargar bateria para el pico de la tarde.</div>
+        </div>
+        <div style={{padding:10,borderRadius:6,background:`${D}06`,border:`1px solid ${D}12`}}>
+          <div style={{fontSize:10,fontWeight:600,color:D,marginBottom:4}}>🔴 Pico tarde (critico)</div>
+          <div style={{fontSize:10,lineHeight:1.4}}>OMIE predice picos de <strong>0.22-0.24/kWh</strong> entre 18:00-22:00. El orquestador descargara la bateria al maximo para evitar compra de red cara. Sin orquestador pagarias ~14.20 en esas 4h. Con orquestador: <strong>1.60</strong>. Ahorro solo en este bloque: <strong>12.60</strong>.</div>
+        </div>
+      </div>
+    </Cd>
+    {/* Bottom row */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}><div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Gemelo Digital - Planta 4</div>
         <div style={{position:"relative",width:"100%",paddingBottom:"55%",background:p.sf2,borderRadius:6,border:`1px solid ${p.bd}`}}>
