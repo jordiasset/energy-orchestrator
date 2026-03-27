@@ -99,8 +99,7 @@ function Landing({onLogin}){
     setPdfLoading(true);setPdfError(null);setPdfData(null);setPdfName(file.name);
     try{
       const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=()=>rej(new Error("Error leyendo archivo"));r.readAsDataURL(file)});
-      const resp=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
+      const resp=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           model:"claude-sonnet-4-20250514",max_tokens:1000,
           messages:[{role:"user",content:[
