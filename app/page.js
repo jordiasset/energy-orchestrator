@@ -74,30 +74,35 @@ const sAlerts=[
 
 // ========== APP ==========
 export default function App(){
-  const[tab,setTab]=useState("dash");const[sim,setSim]=useState(true);const[tick,setTick]=useState(0);const[col,setCol]=useState(false);
+  const[tab,setTab]=useState("dash");const[sim,setSim]=useState(true);const[tick,setTick]=useState(0);const[col,setCol]=useState(true);const[mob,setMob]=useState(false);
+  useEffect(()=>{const c=()=>{const m=window.innerWidth<768;setMob(m);if(m)setCol(true)};c();window.addEventListener("resize",c);return()=>window.removeEventListener("resize",c)},[]);
   useEffect(()=>{if(!sim)return;const iv=setInterval(()=>setTick(t=>t+1),3000);return()=>clearInterval(iv)},[sim]);
   const pvN=+(pvH[HR]?.pv+Math.sin(tick*.3)*3).toFixed(1),socN=+Math.min(99,Math.max(12,batH[HR]?.soc+Math.sin(tick*.2)*2)).toFixed(0),gridN=+(Math.max(0,55-pvN+Math.sin(tick*.4)*5)).toFixed(1),conN=+(pvN+gridN+(socN>50?-5:8)).toFixed(1),omieN=omie[HR]?.precio||.08;
   const dec=omieN>.12?"BATERIA":pvN>30?"FOTOVOLTAICA":"RED",decC=dec==="BATERIA"?D:dec==="FOTOVOLTAICA"?G:A;
   const sf="#fff",sf2="#f8f9fa",tx="#111",tx2="#666",bd="#e2e5e9",sh="0 1px 8px rgba(0,0,0,.06)";
-  const p={sf,sf2,tx,tx2,bd,sh,A,G,W,D,P,pvN,socN,gridN,conN,omieN,dec,decC,tick,HR};
+  const p={sf,sf2,tx,tx2,bd,sh,A,G,W,D,P,pvN,socN,gridN,conN,omieN,dec,decC,tick,HR,mob};
   const nav=[{id:"dash",ic:BarChart3,l:"Dashboard"},{id:"monitor",ic:Eye,l:"Monitorizacion"},{id:"orq",ic:Brain,l:"Orquestacion IA"},{id:"alertas",ic:Bell,l:"Alertas"},{id:"fin",ic:CircleDollarSign,l:"Financiero"},{id:"sys",ic:Layers,l:"Sistema"}];
   const R=()=>{switch(tab){case"dash":return <Pg1 {...p}/>;case"monitor":return <Pg2 {...p}/>;case"orq":return <Pg3 {...p}/>;case"alertas":return <Pg4 {...p}/>;case"fin":return <Pg5 {...p}/>;case"sys":return <Pg6 {...p}/>;default:return null}};
   return(
     <div style={{width:"100%",height:"100vh",background:"#f0f2f5",color:tx,fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}@keyframes glow{0%,100%{box-shadow:0 0 6px ${A}33}50%{box-shadow:0 0 16px ${A}55}}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}`}</style>
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}@keyframes glow{0%,100%{box-shadow:0 0 6px ${A}33}50%{box-shadow:0 0 16px ${A}55}}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.g8{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}.gSide{display:grid;grid-template-columns:1fr 280px;gap:10px}.g3fr2fr{display:grid;grid-template-columns:3fr 2fr;gap:10px}.gDecs{display:grid;grid-template-columns:repeat(6,1fr);gap:0}.gStrat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:768px){.g2,.g3,.g4,.g5,.g6,.gSide,.g3fr2fr,.gStrat{grid-template-columns:1fr}.g8{grid-template-columns:repeat(4,1fr)}.gDecs{grid-template-columns:repeat(3,1fr);gap:4px}}`}</style>
       <header style={{height:44,background:"rgba(255,255,255,.85)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",padding:"0 14px",borderBottom:`1px solid ${bd}`,gap:10,flexShrink:0,zIndex:50}}>
         <IB onClick={()=>setCol(!col)} c={tx2}><Menu size={15}/></IB>
-        <div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:26,height:26,borderRadius:6,background:`linear-gradient(135deg,${A},${AL})`,display:"flex",alignItems:"center",justifyContent:"center"}}><PlugZap size={13} color="#fff"/></div><span style={{fontWeight:700,fontSize:13.5}}>Seinon + Orchestrator</span><span style={{fontSize:9,color:"#fff",background:G,padding:"1px 6px",borderRadius:8,fontWeight:600}}>LIVE</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:26,height:26,borderRadius:6,background:`linear-gradient(135deg,${A},${AL})`,display:"flex",alignItems:"center",justifyContent:"center"}}><PlugZap size={13} color="#fff"/></div><span style={{fontWeight:700,fontSize:13.5}}>Seinon</span><span style={{fontSize:9,color:"#fff",background:G,padding:"1px 6px",borderRadius:8,fontWeight:600}}>LIVE</span></div>
         <div style={{flex:1}}/>
-        <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:tx2}}><Cpu size={11}/>RPi PLC 21+ <span style={{display:"flex",alignItems:"center",gap:3,marginLeft:8}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/><span style={{color:G}}>Online</span></span></div>
-        <IB c={tx2} onClick={()=>setSim(!sim)}>{sim?<Pause size={13}/>:<Play size={13}/>}</IB><IB c={tx2}><Bell size={13}/></IB><IB c={tx2}><Settings size={13}/></IB>
+        {!mob&&<div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:tx2}}><Cpu size={11}/>RPi PLC 21+ <span style={{display:"flex",alignItems:"center",gap:3,marginLeft:8}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/><span style={{color:G}}>Online</span></span></div>}
+        {mob&&<span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/></span>}
+        <IB c={tx2} onClick={()=>setSim(!sim)}>{sim?<Pause size={13}/>:<Play size={13}/>}</IB>{!mob&&<IB c={tx2}><Bell size={13}/></IB>}<IB c={tx2}><Settings size={13}/></IB>
       </header>
       <div style={{display:"flex",flex:1,overflow:"hidden"}}>
-        <nav style={{width:col?48:165,flexShrink:0,background:"rgba(255,255,255,.85)",backdropFilter:"blur(20px)",borderRight:`1px solid ${bd}`,padding:"6px 3px",transition:"width .3s ease",display:"flex",flexDirection:"column"}}>
-          {nav.map(n=>{const ac=tab===n.id,Ic=n.ic;return(<button key={n.id} onClick={()=>setTab(n.id)} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:col?"9px 14px":"8px 10px",background:ac?"#e8edf2":"transparent",border:"none",borderRadius:5,cursor:"pointer",color:ac?tx:tx2,fontSize:12,fontWeight:ac?600:400,fontFamily:"inherit",textAlign:"left",position:"relative",transition:"all .15s",marginBottom:1}} onMouseEnter={e=>{if(!ac)e.currentTarget.style.background="#f0f0f0"}} onMouseLeave={e=>{if(!ac)e.currentTarget.style.background="transparent"}}>{ac&&<div style={{position:"absolute",left:0,top:"50%",transform:"translateY(-50%)",width:3,height:14,borderRadius:2,background:A}}/>}<Ic size={15}/>{!col&&<span>{n.l}</span>}</button>)})}
+        <nav style={{width:col?(mob?0:48):165,flexShrink:0,background:"rgba(255,255,255,.95)",backdropFilter:"blur(20px)",borderRight:col&&mob?"none":`1px solid ${bd}`,padding:col&&mob?"0":"6px 3px",transition:"width .3s ease",display:"flex",flexDirection:"column",overflow:"hidden",...(mob&&!col?{position:"absolute",left:0,top:44,bottom:0,zIndex:40,width:200,boxShadow:"4px 0 20px rgba(0,0,0,.1)"}:{})}}>
+          {mob&&!col&&<div onClick={()=>setCol(true)} style={{position:"fixed",left:200,top:44,right:0,bottom:0,background:"rgba(0,0,0,.2)",zIndex:39}}/>}
+          {nav.map(n=>{const ac=tab===n.id,Ic=n.ic;return(<button key={n.id} onClick={()=>{setTab(n.id);if(mob)setCol(true)}} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:col?"9px 14px":"8px 10px",background:ac?"#e8edf2":"transparent",border:"none",borderRadius:5,cursor:"pointer",color:ac?tx:tx2,fontSize:12,fontWeight:ac?600:400,fontFamily:"inherit",textAlign:"left",position:"relative",transition:"all .15s",marginBottom:1}} onMouseEnter={e=>{if(!ac)e.currentTarget.style.background="#f0f0f0"}} onMouseLeave={e=>{if(!ac)e.currentTarget.style.background="transparent"}}>{ac&&<div style={{position:"absolute",left:0,top:"50%",transform:"translateY(-50%)",width:3,height:14,borderRadius:2,background:A}}/>}<Ic size={15}/>{!col&&<span>{n.l}</span>}</button>)})}
           {!col&&<div style={{marginTop:"auto",padding:"8px 10px",borderTop:`1px solid ${bd}`,fontSize:9,color:tx2}}><div style={{display:"flex",alignItems:"center",gap:4}}><Wifi size={10} color={G}/>Modbus OK - 8 medidores</div><div style={{marginTop:2}}>Planta 4 - Certex Innova</div></div>}
         </nav>
-        <main style={{flex:1,overflow:"auto",padding:16}}><div style={{animation:"fadeUp .3s ease"}} key={tab}>{R()}</div></main>
+        <main style={{flex:1,overflow:"auto",padding:mob?10:16}}><div style={{animation:"fadeUp .3s ease"}} key={tab}>{R()}</div></main>
       </div>
     </div>
   );
@@ -108,7 +113,7 @@ function IB({children,onClick,c}){return <button onClick={onClick} style={{backg
 function Cd({children,style={},s="#fff",sh:shadow,bd:border}){return <div style={{background:s,borderRadius:7,padding:14,border:`1px solid ${border}`,boxShadow:shadow,...style}}>{children}</div>}
 function Bg({text,color}){return <span style={{padding:"2px 7px",borderRadius:9,fontSize:9,fontWeight:600,background:`${color}12`,color}}>{text}</span>}
 function TT(p){return{contentStyle:{background:"#fff",border:`1px solid ${p.bd}`,borderRadius:7,fontSize:10,boxShadow:p.sh}}}
-function Hd({t,sub,children}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><div><h1 style={{fontSize:18,fontWeight:700,margin:0}}>{t}</h1>{sub&&<p style={{fontSize:11,color:"#666",margin:"2px 0 0"}}>{sub}</p>}</div>{children}</div>}
+function Hd({t,sub,children}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:8}}><div><h1 style={{fontSize:18,fontWeight:700,margin:0}}>{t}</h1>{sub&&<p style={{fontSize:11,color:"#666",margin:"2px 0 0"}}>{sub}</p>}</div>{children}</div>}
 function Mi({ic:Ic,l,v,u,color,sub,p}){return(<Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:10}}><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}><div style={{width:24,height:24,borderRadius:5,background:`${color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic size={12} color={color}/></div><span style={{fontSize:9,color:p.tx2}}>{l}</span></div><div style={{fontSize:17,fontWeight:700,letterSpacing:-.5}}>{v}{u&&<span style={{fontSize:10,fontWeight:400,color:p.tx2}}> {u}</span>}</div>{sub&&<Bg text={sub} color={color}/>}</Cd>)}
 
 // ========== 1. DASHBOARD ==========
@@ -118,12 +123,12 @@ function Pg1(p){
   return(<>
     <Hd t="Dashboard General" sub="Monitorizacion + Orquestacion IA - Planta 4"><div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:7,background:`${p.decC}08`,border:`2px solid ${p.decC}25`,animation:"glow 3s infinite"}}><Zap size={14} color={p.decC}/><div><div style={{fontSize:9,color:p.tx2}}>Fuente</div><div style={{fontSize:14,fontWeight:700,color:p.decC}}>{p.dec}</div></div></div></Hd>
     {/* AI Banner */}
-    <div style={{padding:"8px 12px",borderRadius:7,background:`linear-gradient(135deg,${A}06,${P}06)`,border:`1px solid ${A}18`,marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+    <div style={{padding:"8px 12px",borderRadius:7,background:`linear-gradient(135deg,${A}06,${P}06)`,border:`1px solid ${A}18`,marginBottom:10,display:"flex",alignItems:"flex-start",gap:8,flexWrap:"wrap"}}>
       <div style={{width:28,height:28,borderRadius:7,background:`${A}12`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Brain size={14} color={A}/></div>
       <div style={{flex:1}}><div style={{fontSize:9,color:A,fontWeight:600}}>IA INSIGHT</div><div style={{fontSize:11}}>{ins}</div></div><Bg text="94%" color={A}/>
     </div>
     {/* KPIs - 8 across */}
-    <div style={{display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:8,marginBottom:10}}>
+    <div className="g8" style={{marginBottom:10}}>
       <Mi ic={SunMedium} l="FV" v={`${p.pvN}`} u="kW" color={p.W} p={p}/>
       <Mi ic={SI} l="Bateria" v={`${p.socN}%`} color={p.socN>50?p.G:p.D} p={p}/>
       <Mi ic={Plug} l="Red" v={`${p.gridN}`} u="kW" color={p.A} p={p}/>
@@ -134,7 +139,7 @@ function Pg1(p){
       <Mi ic={AlertTriangle} l="Alertas" v="3" color={p.D} sub="activas" p={p}/>
     </div>
     {/* Charts 2x2 */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+    <div className="g2" style={{marginBottom:8}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}><div style={{fontSize:12,fontWeight:600,marginBottom:6}}>OMIE + Prediccion IA</div>
         <ResponsiveContainer width="100%" height={130}><ComposedChart data={pricePred}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="hora" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} interval={3}/><YAxis tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false}/><Tooltip {...TT(p)}/><ReferenceLine y={.12} stroke={D} strokeDasharray="3 3"/><Area type="monotone" dataKey="upper" stroke="none" fill={`${P}12`}/><Area type="monotone" dataKey="lower" stroke="none" fill={p.sf}/><Line type="monotone" dataKey="real" stroke={A} strokeWidth={2} dot={false}/><Line type="monotone" dataKey="pred" stroke={P} strokeWidth={1.5} strokeDasharray="4 3" dot={false}/></ComposedChart></ResponsiveContainer>
       </Cd>
@@ -144,12 +149,12 @@ function Pg1(p){
     </div>
     {/* Strategy of the Day */}
     <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:14,marginBottom:10,borderLeft:`4px solid ${A}`}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:10,flexWrap:"wrap"}}>
         <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${A}15,${P}15)`,display:"flex",alignItems:"center",justifyContent:"center"}}><Brain size={16} color={A}/></div>
         <div><div style={{fontSize:14,fontWeight:700}}>Estrategia de Consumo - Hoy</div><div style={{fontSize:10,color:p.tx2}}>Generada por Seinon IA a las 00:05 - Actualizada con intradiario a las 12:15</div></div>
         <div style={{marginLeft:"auto",display:"flex",gap:4}}><Bg text="Optimizando" color={G}/><Bg text="Ahorro est. 29.40" color={G}/></div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:0,marginBottom:12}}>
+      <div className="gDecs" style={{marginBottom:12}}>
         {decs.map((d,i)=>{const Ic=d.ic;const isNow=HR>=parseInt(d.h)&&HR<(parseInt(decs[i+1]?.h)||24);return(
           <div key={i} style={{padding:"10px 8px",textAlign:"center",background:isNow?`${d.c}10`:i%2===0?p.sf2:"transparent",borderRadius:isNow?6:0,border:isNow?`2px solid ${d.c}`:"2px solid transparent",position:"relative"}}>
             {isNow&&<div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:7,fontWeight:700,color:d.c,background:p.sf,padding:"1px 6px",borderRadius:8,border:`1px solid ${d.c}`}}>AHORA</div>}
@@ -161,7 +166,7 @@ function Pg1(p){
           </div>
         )})}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+      <div className="g3" style={{gap:10}}>
         <div style={{padding:10,borderRadius:6,background:`${A}06`,border:`1px solid ${A}12`}}>
           <div style={{fontSize:10,fontWeight:600,color:A,marginBottom:4}}>🌙 Madrugada (ahora mismo)</div>
           <div style={{fontSize:10,lineHeight:1.4}}>El algoritmo ha detectado que OMIE marca precios de <strong>0.03/kWh</strong> hasta las 06:00. Se esta cargando la bateria al maximo aprovechando tarifa valle. SoC actual: <strong>{p.socN}%</strong>. Objetivo: llegar al 95% antes del amanecer para cubrir el pico de la tarde sin comprar red cara.</div>
@@ -177,7 +182,7 @@ function Pg1(p){
       </div>
     </Cd>
     {/* Bottom row */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+    <div className="g3">
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}><div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Gemelo Digital - Planta 4</div>
         <div style={{position:"relative",width:"100%",paddingBottom:"55%",background:p.sf2,borderRadius:6,border:`1px solid ${p.bd}`}}>
           {zones.map(z=>{const bg=z.st==="alert"?`${D}15`:z.st==="warn"?`${W}15`:`${G}08`;const bc=z.st==="alert"?D:z.st==="warn"?W:p.bd;return <div key={z.name} style={{position:"absolute",left:`${z.x}%`,top:`${z.y}%`,width:`${z.w}%`,height:`${z.h}%`,background:bg,border:`1.5px solid ${bc}`,borderRadius:5,padding:4,display:"flex",flexDirection:"column",justifyContent:"space-between",cursor:"pointer"}}><div style={{fontSize:8,fontWeight:600}}>{z.name}</div><div style={{display:"flex",justifyContent:"space-between",fontSize:7,color:p.tx2}}><span>{z.kw}kW</span><span>{z.temp}C</span></div></div>})}
@@ -185,7 +190,7 @@ function Pg1(p){
       </Cd>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}><div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Bateria + Prevision Solar</div>
         <ResponsiveContainer width="100%" height={80}><AreaChart data={batH}><defs><linearGradient id="bG" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={P} stopOpacity={.35}/><stop offset="95%" stopColor={P} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="hora" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} interval={4}/><YAxis tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} domain={[0,100]}/><Area type="monotone" dataKey="soc" stroke={P} fill="url(#bG)" strokeWidth={2}/></AreaChart></ResponsiveContainer>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:3,marginTop:6}}>{forecast.map(f=>{const Ic=f.ic;return <div key={f.d} style={{textAlign:"center",padding:3,borderRadius:4,background:p.sf2,border:`1px solid ${p.bd}`}}><div style={{fontSize:7,fontWeight:600}}>{f.d}</div><Ic size={14} color={f.c} style={{margin:"2px auto",display:"block"}}/><div style={{fontSize:9,fontWeight:700,color:f.c}}>{f.pv}</div></div>})}</div>
+        <div className="g5" style={{gap:3,marginTop:6}}>{forecast.map(f=>{const Ic=f.ic;return <div key={f.d} style={{textAlign:"center",padding:3,borderRadius:4,background:p.sf2,border:`1px solid ${p.bd}`}}><div style={{fontSize:7,fontWeight:600}}>{f.d}</div><Ic size={14} color={f.c} style={{margin:"2px auto",display:"block"}}/><div style={{fontSize:9,fontWeight:700,color:f.c}}>{f.pv}</div></div>})}</div>
       </Cd>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}><div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Decisiones IA + Ahorro</div>
         {decs.filter(d=>parseInt(d.h)>=HR).slice(0,3).map((d,i)=>{const Ic=d.ic;return <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 0",borderBottom:i<2?`1px solid ${p.bd}`:"none"}}><div style={{width:22,height:22,borderRadius:5,background:`${d.c}10`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ic size={10} color={d.c}/></div><div style={{flex:1}}><div style={{fontSize:10,fontWeight:600}}>{d.a}</div><div style={{fontSize:8,color:p.tx2}}>{d.h}</div></div><span style={{fontSize:11,fontWeight:700,color:G}}>{d.s}</span></div>})}
@@ -202,7 +207,7 @@ function Pg2(p){
   return(<>
     <Hd t="Monitorizacion" sub="Puntos de medida, zonas, gemelo digital y tiempo real"/>
     {/* Gemelo Digital grande */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 280px",gap:10,marginBottom:10}}>
+    <div className="gSide" style={{marginBottom:10}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Gemelo Digital - Planta 4 (click en zona para filtrar)</div>
         <div style={{position:"relative",width:"100%",paddingBottom:"45%",background:p.sf2,borderRadius:6,border:`1px solid ${p.bd}`}}>
@@ -233,7 +238,7 @@ function Pg2(p){
         <div style={{fontSize:12,fontWeight:600}}>Puntos de Medida {selZone&&`- ${selZone}`}</div>
         {selZone&&<button onClick={()=>setSelZone(null)} style={{fontSize:10,color:A,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Ver todos</button>}
       </div>
-      <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10,minWidth:500}}>
         <thead><tr style={{borderBottom:`2px solid ${p.bd}`}}>{["ID","Zona","Tipo","Valor Mes","Potencia","Cos phi","Estado"].map(h=><th key={h} style={{padding:"5px 8px",textAlign:"left",fontWeight:600,fontSize:9,color:p.tx2}}>{h}</th>)}</tr></thead>
         <tbody>{filt.map(m=><tr key={m.id} style={{borderBottom:`1px solid ${p.bd}`}}>
           <td style={{padding:"5px 8px",fontWeight:600}}>{m.id}</td>
@@ -244,10 +249,10 @@ function Pg2(p){
           <td style={{padding:"5px 8px"}}><span style={{color:parseFloat(m.cosPhi)<.9?D:G,fontWeight:600}}>{m.cosPhi}</span></td>
           <td style={{padding:"5px 8px"}}><Bg text={m.st} color={m.st==="online"?G:W}/></td>
         </tr>)}</tbody>
-      </table>
+      </table></div>
     </Cd>
     {/* Realtime charts per zone */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+    <div className="g3">
       {[{l:"Energia Activa (kWh)",data:pFlow,dk:"consumo",c:A},{l:"Potencia (kW)",data:pFlow,dk:"pv",c:W},{l:"Temperaturas",data:batH.map((b,i)=>({...b,cam1:2.5+Math.sin(i*.3)*.8,cam2:1.2+Math.sin(i*.4)*.6})),dk:"cam1",c:P}].map((ch,i)=>(
         <Cd key={i} s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
           <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>{ch.l}</div>
@@ -267,11 +272,11 @@ function Pg3(p){
   return(<>
     <Hd t="Orquestacion IA" sub="Prediccion, anomalias, recomendaciones, simulador y schedule"><div style={{display:"flex",gap:4}}><Bg text="LSTM v3.2" color={A}/><Bg text="94.2% precision" color={G}/></div></Hd>
     {/* AI KPIs */}
-    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:8}}>
+    <div className="g6" style={{marginBottom:8}}>
       <Mi ic={Brain} l="Modelo" v="LSTM" color={A} sub="v3.2" p={p}/><Mi ic={Target} l="MAPE" v="5.8%" color={G} p={p}/><Mi ic={AlertTriangle} l="Anomalias" v="5" color={D} sub="mes" p={p}/><Mi ic={Lightbulb} l="Recomend." v="6" color={W} p={p}/><Mi ic={CircleDollarSign} l="Ahorro IA" v="2,390" color={G} sub="/mes" p={p}/><Mi ic={ShieldCheck} l="Uptime" v="99.9%" color={G} p={p}/>
     </div>
     {/* Predictions */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+    <div className="g2" style={{marginBottom:8}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:12,fontWeight:600}}>Prediccion Consumo 30d</span><Bg text="LSTM" color={P}/></div>
         <ResponsiveContainer width="100%" height={140}><ComposedChart data={pred30}><defs><linearGradient id="ci" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={A} stopOpacity={.1}/><stop offset="95%" stopColor={A} stopOpacity={.01}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="dia" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} interval={4}/><YAxis tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false}/><Tooltip {...TT(p)}/><Area type="monotone" dataKey="upper" stroke="none" fill="url(#ci)"/><Area type="monotone" dataKey="lower" stroke="none" fill={p.sf}/><Line type="monotone" dataKey="pred" stroke={A} strokeWidth={1.5} strokeDasharray="5 3" dot={false}/><Line type="monotone" dataKey="real" stroke={G} strokeWidth={2} dot={false}/></ComposedChart></ResponsiveContainer>
       </Cd>
@@ -283,18 +288,20 @@ function Pg3(p){
     {/* Anomalies */}
     <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12,marginBottom:8}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:12,fontWeight:600}}>Anomalias Detectadas (Isolation Forest)</span><Bg text="Impacto: +870/mes" color={D}/></div>
-      {anomalies.map((a,i)=>(<div key={i} style={{display:"grid",gridTemplateColumns:"70px 1fr 80px 50px 1fr",gap:8,alignItems:"center",padding:"7px 0",borderBottom:i<anomalies.length-1?`1px solid ${p.bd}`:"none",fontSize:10}}>
+      <div style={{overflowX:"auto"}}>
+      {anomalies.map((a,i)=>(<div key={i} style={{display:"grid",gridTemplateColumns:"70px 1fr 80px 50px 1fr",gap:8,alignItems:"center",padding:"7px 0",borderBottom:i<anomalies.length-1?`1px solid ${p.bd}`:"none",fontSize:10,minWidth:600}}>
         <div><div style={{fontWeight:600,fontSize:9}}>{a.fecha}</div><Bg text={a.sev} color={a.sev==="alta"?D:a.sev==="media"?W:A}/></div>
         <div><div style={{fontWeight:600}}>{a.tipo}</div><div style={{fontSize:9,color:p.tx2}}>{a.desc}</div></div>
         <div style={{textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:D}}>{a.imp}</div></div>
         <div style={{textAlign:"center",fontSize:12,fontWeight:700,color:A}}>{a.conf}%</div>
         <div style={{padding:"4px 8px",borderRadius:4,background:`${G}06`,fontSize:9}}><strong style={{color:G}}>→</strong> {a.acc}</div>
       </div>))}
+      </div>
     </Cd>
     {/* Recommendations */}
     <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12,marginBottom:8}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:12,fontWeight:600}}>Recomendaciones IA</span><Bg text="Potencial: 2,390/mes" color={G}/></div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+      <div className="g3" style={{gap:6}}>
         {aiRecs.map((r,i)=>{const Ic=r.ic;return(<div key={i} style={{padding:10,borderRadius:6,border:`1px solid ${p.bd}`,background:p.sf2}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{width:28,height:28,borderRadius:6,background:`${A}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic size={14} color={A}/></div><div style={{fontSize:10,fontWeight:700}}>{r.t}</div></div>
           <div style={{fontSize:9,color:p.tx2,marginBottom:4,lineHeight:1.3}}>{r.d}</div>
@@ -303,7 +310,7 @@ function Pg3(p){
       </div>
     </Cd>
     {/* Pattern + Projection + Simulator + Compare + Schedule */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+    <div className="g2" style={{marginBottom:8}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Patron Semanal IA (kW)</div>
         <div style={{overflowX:"auto"}}><div style={{display:"grid",gridTemplateColumns:"18px repeat(24,1fr)",gap:1,minWidth:450}}>
@@ -316,7 +323,7 @@ function Pg3(p){
         <ResponsiveContainer width="100%" height={110}><ComposedChart data={mPred}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="mes" tick={{fill:p.tx2,fontSize:9}} axisLine={false} tickLine={false}/><YAxis tick={{fill:p.tx2,fontSize:8}} axisLine={false} tickLine={false}/><Tooltip {...TT(p)}/><Bar dataKey="coste" fill={`${A}25`} radius={[3,3,0,0]} name="Coste"/><Bar dataKey="ahorro" fill={G} radius={[3,3,0,0]} name="Ahorro"/></ComposedChart></ResponsiveContainer>
       </Cd>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+    <div className="g2" style={{marginBottom:8}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Simulador IA</div>
         {[{l:"FV extra",v:pvX,set:setPvX,max:100,step:5,u:"kWp",c:W},{l:"Bateria extra",v:batX,set:setBatX,max:50,step:5,u:"kWh",c:P}].map(s=>(
@@ -327,7 +334,7 @@ function Pg3(p){
       </Cd>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Con vs Sin Orquestador IA</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5,marginBottom:6}}>
+        <div className="g3" style={{marginBottom:6}}>
           <div style={{padding:5,borderRadius:5,background:p.sf2,textAlign:"center"}}><div style={{fontSize:8,color:p.tx2}}>Sin</div><div style={{fontSize:14,fontWeight:700,color:D}}>{tSin.toLocaleString()}</div></div>
           <div style={{padding:5,borderRadius:5,background:p.sf2,textAlign:"center"}}><div style={{fontSize:8,color:p.tx2}}>Con</div><div style={{fontSize:14,fontWeight:700,color:G}}>{tCon.toLocaleString()}</div></div>
           <div style={{padding:5,borderRadius:5,background:`${G}08`,textAlign:"center"}}><div style={{fontSize:8,color:p.tx2}}>Ahorro</div><div style={{fontSize:14,fontWeight:700,color:G}}>{diff.toLocaleString()}</div></div>
@@ -338,7 +345,7 @@ function Pg3(p){
     {/* Schedule */}
     <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:12,fontWeight:600}}>Schedule Optimo IA - Hoy</span><Bg text="FlexMeasures LP" color={A}/></div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:5}}>
+      <div className="gDecs" style={{gap:5}}>
         {decs.map((d,i)=>{const Ic=d.ic;return <div key={i} style={{padding:"8px 6px",borderRadius:5,border:`1px solid ${p.bd}`,background:p.sf2,textAlign:"center"}}><Ic size={16} color={d.c} style={{margin:"0 auto 3px",display:"block"}}/><div style={{fontSize:9,fontWeight:700}}>{d.h}</div><div style={{fontSize:8,marginTop:1}}>{d.a}</div><div style={{fontSize:11,fontWeight:700,color:G,marginTop:3}}>{d.s}</div></div>})}
       </div>
       <div style={{marginTop:6,padding:6,borderRadius:5,background:`${G}06`,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:11,color:G,fontWeight:600}}>Total ahorro IA hoy</span><span style={{fontSize:18,fontWeight:700,color:G}}>29.40</span></div>
@@ -351,10 +358,10 @@ function Pg4(p){
   const tc={alta:D,media:W,ok:G,info:A};
   return(<>
     <Hd t="Alertas" sub="Alarmas clasicas + deteccion anomalias IA"/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
+    <div className="g4" style={{marginBottom:10}}>
       <Mi ic={AlertTriangle} l="Activas" v="3" color={D} p={p}/><Mi ic={CheckCircle} l="Resueltas 7d" v="5" color={G} p={p}/><Mi ic={Brain} l="Anomalias IA" v="5" color={W} sub="mes" p={p}/><Mi ic={CircleDollarSign} l="Impacto" v="870" color={D} sub="/mes" p={p}/>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+    <div className="g2" style={{gap:10}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Alertas del Sistema (clasicas + IA)</div>
         {sAlerts.map((a,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:i<sAlerts.length-1?`1px solid ${p.bd}`:"none"}}>
@@ -384,10 +391,10 @@ function Pg4(p){
 function Pg5(p){
   return(<>
     <Hd t="Financiero" sub="Ahorro, facturas, valor solar e informe mensual"><button style={{padding:"5px 12px",borderRadius:5,border:"none",background:A,color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><Download size={12}/> PDF</button></Hd>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:10}}>
+    <div className="g6" style={{marginBottom:10}}>
       <Mi ic={CircleDollarSign} l="Hoy" v="29.40" color={G} p={p}/><Mi ic={CircleDollarSign} l="Semana" v="191" color={A} p={p}/><Mi ic={CircleDollarSign} l="Mes" v="824" color={W} p={p}/><Mi ic={CircleDollarSign} l="Anual" v="9,894" color={P} p={p}/><Mi ic={SunMedium} l="Valor FV" v="89.52" color={W} p={p}/><Mi ic={Activity} l="Autoconsumo" v="62%" color={G} p={p}/>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
+    <div className="g3" style={{marginBottom:10}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Ahorro Semanal</div>
         <ResponsiveContainer width="100%" height={130}><BarChart data={wSav}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="d" tick={{fill:p.tx2,fontSize:10}} axisLine={false} tickLine={false}/><YAxis tick={{fill:p.tx2,fontSize:8}} axisLine={false} tickLine={false}/><Tooltip {...TT(p)}/><Bar dataKey="v" fill={G} radius={[4,4,0,0]}/></BarChart></ResponsiveContainer>
@@ -408,22 +415,22 @@ function Pg5(p){
     {/* Facturas */}
     <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12,marginBottom:10}}>
       <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Facturas Electricidad</div>
-      <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10,minWidth:500}}>
         <thead><tr style={{borderBottom:`2px solid ${p.bd}`}}>{["ID","Nombre","Periodo","Tarifa","Max","Total","Validada"].map(h=><th key={h} style={{padding:"5px 8px",textAlign:"left",fontWeight:600,fontSize:9,color:p.tx2}}>{h}</th>)}</tr></thead>
         <tbody>{facturas.map(f=><tr key={f.id} style={{borderBottom:`1px solid ${p.bd}`}}>
           <td style={{padding:"5px 8px",color:p.tx2}}>{f.id}</td><td style={{padding:"5px 8px",fontWeight:500}}>{f.nom}</td><td style={{padding:"5px 8px",color:p.tx2}}>{f.per}</td><td style={{padding:"5px 8px"}}>{f.tar}</td><td style={{padding:"5px 8px"}}>{f.max}</td><td style={{padding:"5px 8px",fontWeight:600,color:A}}>{f.total}</td><td style={{padding:"5px 8px"}}>{f.val?<CheckCircle size={14} color={G}/>:<AlertTriangle size={14} color={D}/>}</td>
         </tr>)}</tbody>
-      </table>
+      </table></div>
     </Cd>
     {/* Monthly report */}
     <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
       <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Informe Mensual - Marzo 2026</div>
       <div style={{background:p.sf2,borderRadius:6,padding:14,border:`1px solid ${p.bd}`}}>
         <div style={{textAlign:"center",marginBottom:10}}><div style={{fontSize:14,fontWeight:700}}>Certex Innova S.L.</div><div style={{fontSize:10,color:p.tx2}}>Monitorizacion + Orquestacion IA - Planta 4</div></div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+        <div className="g3" style={{marginBottom:10}}>
           {[{l:"Sin orquestador",v:"4,872",c:D},{l:"Con orq. IA",v:"4,048",c:G},{l:"AHORRO",v:"824",c:G}].map(k=><div key={k.l} style={{padding:8,borderRadius:5,background:"#fff",border:`1px solid ${p.bd}`,textAlign:"center"}}><div style={{fontSize:8,color:p.tx2}}>{k.l}</div><div style={{fontSize:16,fontWeight:700,color:k.c}}>{k.v}</div></div>)}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,fontSize:10}}>
+        <div className="g3" style={{fontSize:10}}>
           <div>{[{l:"FV",v:"45%"},{l:"Bateria",v:"30%"},{l:"Red",v:"25%"}].map(r=><div key={r.l} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:`1px solid ${p.bd}`}}><span>{r.l}</span><strong>{r.v}</strong></div>)}</div>
           <div>{[{l:"Autoconsumo",v:"62%"},{l:"SoH Bat",v:"96.5%"},{l:"Uptime",v:"99.8%"}].map(r=><div key={r.l} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:`1px solid ${p.bd}`}}><span>{r.l}</span><strong>{r.v}</strong></div>)}</div>
           <div>{[{l:"Anomalias IA",v:"5"},{l:"Medidores",v:"8"},{l:"CO2 evitado",v:"3.8t"}].map(r=><div key={r.l} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:`1px solid ${p.bd}`}}><span>{r.l}</span><strong>{r.v}</strong></div>)}</div>
@@ -440,16 +447,16 @@ function Pg6(p){
   const cS=sohH[sohH.length-1].soh;
   return(<>
     <Hd t="Sistema" sub="Hardware PLC, salud bateria e integraciones"/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:10}}>
+    <div className="g6" style={{marginBottom:10}}>
       <Mi ic={Cpu} l="CPU" v="RPi 4" color={A} sub="ARM A72" p={p}/><Mi ic={Thermometer} l="Temp" v="42C" color={G} p={p}/><Mi ic={Clock} l="Uptime" v="47d" color={G} p={p}/><Mi ic={Heart} l="SoH" v={`${cS.toFixed(1)}%`} color={cS>90?G:W} p={p}/><Mi ic={RefreshCw} l="Ciclos" v={`${sohH[sohH.length-1].ciclos}`} color={A} p={p}/><Mi ic={Clock} l="Vida" v="12.5a" color={P} p={p}/>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+    <div className="g2" style={{marginBottom:8}}>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Puertos y Conexiones</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+        <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10,minWidth:500}}>
           <thead><tr style={{borderBottom:`2px solid ${p.bd}`}}>{["Puerto","Dispositivo","Proto",""].map(h=><th key={h} style={{padding:"4px 6px",textAlign:"left",fontWeight:600,fontSize:8,color:p.tx2}}>{h}</th>)}</tr></thead>
           <tbody>{ports.map((pt,i)=><tr key={i} style={{borderBottom:`1px solid ${p.bd}`}}><td style={{padding:"4px 6px",fontWeight:600}}>{pt.n}</td><td style={{padding:"4px 6px"}}>{pt.d}</td><td style={{padding:"4px 6px",color:p.tx2,fontSize:9}}>{pt.pr}</td><td style={{padding:"4px 6px"}}><Bg text={pt.s} color={pt.c}/></td></tr>)}</tbody>
-        </table>
+        </table></div>
       </Cd>
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>Integraciones</div>
@@ -459,7 +466,7 @@ function Pg6(p){
           </div>))}
       </Cd>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+    <div className="g2">
       <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:6}}>SoH Bateria 12m</div>
         <ResponsiveContainer width="100%" height={120}><LineChart data={sohH}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="mes" tick={{fill:p.tx2,fontSize:8}} axisLine={false} tickLine={false}/><YAxis tick={{fill:p.tx2,fontSize:8}} axisLine={false} tickLine={false} domain={[95,100]}/><Tooltip {...TT(p)}/><Line type="monotone" dataKey="soh" stroke={G} strokeWidth={2} dot={{fill:G,r:2}}/></LineChart></ResponsiveContainer>
