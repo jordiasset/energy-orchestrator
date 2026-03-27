@@ -88,8 +88,65 @@ function Landing({onLogin}){
   const[showCalc,setShowCalc]=useState(false);
   const[loginOpen,setLoginOpen]=useState(false);
   const[anim,setAnim]=useState(0);
+  const[pdfLoading,setPdfLoading]=useState(false);
+  const[pdfData,setPdfData]=useState(null);
+  const[pdfError,setPdfError]=useState(null);
+  const[pdfName,setPdfName]=useState(null);
   useEffect(()=>{const c=()=>setMob(window.innerWidth<768);c();window.addEventListener("resize",c);return()=>window.removeEventListener("resize",c)},[]);
   useEffect(()=>{const iv=setInterval(()=>setAnim(a=>a+1),2000);return()=>clearInterval(iv)},[]);
+
+  const analyzePDF=async(file)=>{
+    setPdfLoading(true);setPdfError(null);setPdfData(null);setPdfName(file.name);
+    try{
+      const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=()=>rej(new Error("Error leyendo archivo"));r.readAsDataURL(file)});
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:1000,
+          messages:[{role:"user",content:[
+            {type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},
+            {type:"text",text:`Analiza esta factura de electricidad espanola y extrae los siguientes datos en JSON puro (sin markdown, sin backticks, solo el JSON):
+{
+  "consumo_mensual_kwh": numero (consumo total en kWh del periodo),
+  "potencia_contratada_kw": numero (maxima potencia contratada en kW),
+  "tarifa": "indexada" o "fija" o "mixta" (tipo de tarifa detectada),
+  "coste_total_eur": numero (importe total de la factura en EUR),
+  "precio_medio_kwh": numero (precio medio por kWh),
+  "periodo": "texto del periodo de facturacion",
+  "comercializadora": "nombre de la comercializadora",
+  "cups": "codigo CUPS si aparece",
+  "tipo_tarifa": "2.0TD o 3.0TD o 6.1TD etc",
+  "potencia_p1_kw": numero o null,
+  "potencia_p2_kw": numero o null,
+  "consumo_p1_kwh": numero o null,
+  "consumo_p2_kwh": numero o null,
+  "consumo_p3_kwh": numero o null,
+  "penalizacion_reactiva": numero o 0,
+  "tiene_fv": true o false (si menciona autoconsumo o FV),
+  "resumen": "breve descripcion de 2-3 frases de lo que muestra la factura"
+}
+Devuelve SOLO el JSON, nada mas.`}
+          ]}]
+        })
+      });
+      const data=await resp.json();
+      const txt=data.content?.map(c=>c.text||"").join("")||"";
+      const clean=txt.replace(/```json|```/g,"").trim();
+      const parsed=JSON.parse(clean);
+      setPdfData(parsed);
+      // Auto-fill form
+      setForm(f=>({
+        ...f,
+        consumo:Math.round(parsed.consumo_mensual_kwh||f.consumo),
+        potencia:Math.round(parsed.potencia_contratada_kw||f.potencia),
+        tarifa:parsed.tarifa||f.tarifa,
+        tipo:parsed.tipo_tarifa?.startsWith("6")?"industrial":parsed.tipo_tarifa?.startsWith("3")?"comercial":"comercial",
+        fv:parsed.tiene_fv?50:0,
+      }));
+      setStep(2); // jump to FV/battery step
+    }catch(e){setPdfError("No se pudo analizar la factura. Verifica que es un PDF de una factura electrica valida. Error: "+e.message)}
+    setPdfLoading(false);
+  };
 
   // Savings calculator
   const consumoAnual=form.consumo*12;
@@ -123,7 +180,7 @@ function Landing({onLogin}){
 
   return(
     <div style={{width:"100%",minHeight:"100vh",background:"#fff",fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",color:"#111",overflowX:"hidden"}}>
-      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.5}}@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}@keyframes typing{from{width:0}to{width:100%}}@keyframes blink{50%{border-color:transparent}}.landBtn{padding:12px 28px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:8px}.landBtn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.5}}@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}@keyframes typing{from{width:0}to{width:100%}}@keyframes blink{50%{border-color:transparent}}@keyframes spin{to{transform:rotate(360deg)}}.landBtn{padding:12px 28px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:8px}.landBtn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
 @media(max-width:768px){.heroGrid{flex-direction:column!important;text-align:center}.featGrid{grid-template-columns:1fr!important}.calcGrid{grid-template-columns:1fr!important}.stepGrid{grid-template-columns:1fr!important}}`}</style>
 
       {/* NAV */}
@@ -148,7 +205,7 @@ function Landing({onLogin}){
           <div style={{flex:1,animation:"fadeUp .8s ease"}}>
             <div style={{display:"inline-block",padding:"4px 12px",borderRadius:20,background:"#0078D415",color:"#0078D4",fontSize:12,fontWeight:600,marginBottom:16}}>🤖 Orquestacion Energetica con IA</div>
             <h1 style={{fontSize:mob?32:48,fontWeight:800,lineHeight:1.1,margin:"0 0 16px",letterSpacing:-.5}}>Tu planta consume.<br/><span style={{color:"#0078D4"}}>Seinon decide cuando.</span></h1>
-            <p style={{fontSize:17,color:"#555",lineHeight:1.6,margin:"0 0 24px",maxWidth:500}}>Monitorizacion inteligente + orquestacion IA que elige en tiempo real si comprar red, usar solar o descargar bateria. <strong>Ahorra hasta un 35% en tu factura electrica.</strong></p>
+            <p style={{fontSize:17,color:"#555",lineHeight:1.6,margin:"0 0 24px",maxWidth:500}}>Monitorizacion inteligente + orquestacion IA que elige en tiempo real si comprar red, usar solar o descargar bateria. <strong>Sube tu factura y te decimos cuanto ahorras.</strong></p>
             <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
               <button onClick={()=>{setShowCalc(true);document.getElementById("calculator")?.scrollIntoView({behavior:"smooth"})}} className="landBtn" style={{background:"#0078D4",color:"#fff"}}>Calcula tu ahorro →</button>
               <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{background:"#fff",color:"#111",border:"1px solid #ddd"}}>Ver demo en vivo</button>
@@ -205,12 +262,72 @@ function Landing({onLogin}){
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:40}}>
             <h2 style={{fontSize:32,fontWeight:700,margin:"0 0 8px"}}>Calcula tu ahorro en 60 segundos</h2>
-            <p style={{fontSize:15,color:"#666"}}>Responde 4 preguntas y te decimos cuanto puedes ahorrar con Seinon</p>
+            <p style={{fontSize:15,color:"#666"}}>Sube tu factura de la luz y la IA analiza tu consumo al instante. O configura los datos manualmente.</p>
           </div>
 
           <div className="calcGrid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
             {/* LEFT: Questionnaire */}
             <div style={{background:"#fff",borderRadius:12,padding:24,border:"1px solid #e5e7eb",boxShadow:"0 4px 20px rgba(0,0,0,.04)"}}>
+              {/* PDF Upload */}
+              <div style={{marginBottom:20,padding:16,borderRadius:10,border:"2px dashed #0078D440",background:pdfData?"#0F7B0F06":pdfLoading?"#0078D406":"#f8faff",transition:"all .3s",position:"relative"}}>
+                {pdfLoading?(
+                  <div style={{textAlign:"center",padding:10}}>
+                    <div style={{width:36,height:36,borderRadius:"50%",border:"3px solid #0078D430",borderTopColor:"#0078D4",animation:"spin 1s linear infinite",margin:"0 auto 10px"}}/>
+                    <div style={{fontSize:13,fontWeight:600,color:"#0078D4"}}>Analizando factura con IA...</div>
+                    <div style={{fontSize:10,color:"#888",marginTop:4}}>Extrayendo consumo, potencia, tarifa, periodos...</div>
+                  </div>
+                ):pdfData?(
+                  <div>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                      <div style={{width:28,height:28,borderRadius:7,background:"#0F7B0F15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>✅</div>
+                      <div><div style={{fontSize:12,fontWeight:700,color:"#0F7B0F"}}>Factura analizada correctamente</div><div style={{fontSize:10,color:"#888"}}>{pdfName}</div></div>
+                      <button onClick={()=>{setPdfData(null);setPdfName(null);setStep(0)}} style={{marginLeft:"auto",fontSize:10,color:"#888",background:"none",border:"1px solid #ddd",borderRadius:4,padding:"3px 8px",cursor:"pointer",fontFamily:"inherit"}}>Cambiar</button>
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
+                      {[
+                        ["Comercializadora",pdfData.comercializadora||"-"],
+                        ["Periodo",pdfData.periodo||"-"],
+                        ["Tarifa",pdfData.tipo_tarifa||pdfData.tarifa||"-"],
+                        ["CUPS",pdfData.cups?pdfData.cups.slice(0,10)+"...":"-"],
+                      ].map(([l,v])=>(
+                        <div key={l} style={{padding:6,borderRadius:5,background:"#f8f9fa",border:"1px solid #e5e7eb"}}>
+                          <div style={{fontSize:8,color:"#888"}}>{l}</div>
+                          <div style={{fontSize:11,fontWeight:600}}>{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
+                      {[
+                        ["Consumo",`${(pdfData.consumo_mensual_kwh||0).toLocaleString()} kWh`,"#0078D4"],
+                        ["Potencia",`${pdfData.potencia_contratada_kw||0} kW`,"#F7630C"],
+                        ["Importe",`${(pdfData.coste_total_eur||0).toFixed(2)} EUR`,"#C42B1C"],
+                      ].map(([l,v,c])=>(
+                        <div key={l} style={{padding:8,borderRadius:5,background:`${c}08`,border:`1px solid ${c}15`,textAlign:"center"}}>
+                          <div style={{fontSize:8,color:"#888"}}>{l}</div>
+                          <div style={{fontSize:15,fontWeight:700,color:c}}>{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {pdfData.resumen&&<div style={{fontSize:10,color:"#555",lineHeight:1.4,padding:8,borderRadius:5,background:"#f8f9fa"}}><strong>Resumen IA:</strong> {pdfData.resumen}</div>}
+                    {pdfData.penalizacion_reactiva>0&&<div style={{fontSize:10,color:"#C42B1C",marginTop:6,padding:6,borderRadius:4,background:"#C42B1C08"}}>⚠️ Penalizacion reactiva detectada: {pdfData.penalizacion_reactiva} EUR — Seinon optimiza el cos phi automaticamente</div>}
+                    <div style={{marginTop:8,padding:8,borderRadius:6,background:"#0078D408",border:"1px solid #0078D415",fontSize:10,color:"#0078D4",fontWeight:600,textAlign:"center"}}>✓ Datos extraidos automaticamente. Ajusta los sliders abajo si necesitas corregir algo.</div>
+                  </div>
+                ):(
+                  <label style={{display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",padding:8}}>
+                    <input type="file" accept=".pdf" onChange={e=>{const f=e.target.files?.[0];if(f)analyzePDF(f)}} style={{display:"none"}}/>
+                    <div style={{width:40,height:40,borderRadius:10,background:"#0078D412",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:8}}>📄</div>
+                    <div style={{fontSize:13,fontWeight:700,color:"#0078D4",marginBottom:3}}>Sube tu factura de la luz</div>
+                    <div style={{fontSize:11,color:"#888",textAlign:"center"}}>Arrastra un PDF o haz click aqui. La IA extrae automaticamente consumo, potencia, tarifa y calcula tu ahorro.</div>
+                    <div style={{marginTop:8,padding:"6px 16px",borderRadius:6,background:"#0078D4",color:"#fff",fontSize:11,fontWeight:600}}>Seleccionar PDF</div>
+                  </label>
+                )}
+                {pdfError&&<div style={{marginTop:8,padding:8,borderRadius:6,background:"#C42B1C08",border:"1px solid #C42B1C15",fontSize:10,color:"#C42B1C"}}>{pdfError}</div>}
+              </div>
+
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                <div style={{flex:1,height:1,background:"#e5e7eb"}}/><span style={{fontSize:10,color:"#aaa",flexShrink:0}}>o configura manualmente</span><div style={{flex:1,height:1,background:"#e5e7eb"}}/>
+              </div>
+
               {/* Progress */}
               <div style={{display:"flex",gap:4,marginBottom:20}}>
                 {steps.map((_,i)=>(<div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=step?"#0078D4":"#e5e7eb",transition:"all .3s"}}/>))}
