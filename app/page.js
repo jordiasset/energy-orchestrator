@@ -366,10 +366,170 @@ function PgReport(p){
     {fecha:"21/03/2026",tipo:"Semanal",estado:"Enviado",canal:"Email + PDF",ahorro:"191.20"},
     {fecha:"01/03/2026",tipo:"Mensual",estado:"Enviado",canal:"Email + PDF",ahorro:"824.00"},
   ];
+
+  const genPDF=async()=>{
+    const{jsPDF}=await import("jspdf");
+    const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const w=doc.internal.pageSize.getWidth();
+    const m=15;let y=0;
+    const col=(r,g,b)=>doc.setTextColor(r,g,b);
+    const bg=(x,yy,ww,hh,r,g,b)=>{doc.setFillColor(r,g,b);doc.rect(x,yy,ww,hh,"F")};
+    const ln=(x1,yy,x2)=>{doc.setDrawColor(220,220,220);doc.setLineWidth(.3);doc.line(x1,yy,x2,yy)};
+
+    // Header blue bar
+    bg(0,0,w,38,0,120,212);
+    doc.setFont("helvetica","normal");doc.setFontSize(8);col(255,255,255);
+    doc.text("REPORTE DIARIO SEINON IA",m,10);
+    doc.setFontSize(18);doc.setFont("helvetica","bold");
+    doc.text("Buenos dias, Jordi",m,20);
+    doc.setFontSize(10);doc.setFont("helvetica","normal");
+    doc.text(`${fecha} - Generado a las 06:00`,m,28);
+    // KPIs in header
+    bg(w-65,8,55,24,255,255,255);col(0,120,212);
+    doc.setFontSize(16);doc.setFont("helvetica","bold");
+    doc.text("29.40 EUR",w-60,19);
+    doc.setFontSize(7);doc.setFont("helvetica","normal");col(100,100,100);
+    doc.text("Ahorro previsto hoy",w-60,25);
+    y=45;
+
+    // Section 1: Executive Summary
+    col(0,120,212);doc.setFontSize(12);doc.setFont("helvetica","bold");
+    doc.text("Resumen Ejecutivo",m,y);y+=7;
+    bg(m,y,w-2*m,28,248,249,250);
+    col(30,30,30);doc.setFontSize(9);doc.setFont("helvetica","normal");
+    const summ="Hoy es un dia favorable para el ahorro energetico. La prevision meteorologica indica cielo despejado con produccion FV estimada de 680 kWh (92kW pico a las 13:00). Los precios OMIE muestran un spread alto de 0.18 EUR/kWh entre valle (0.03) y punta (0.21), lo que hace el arbitraje con bateria muy rentable. El orquestador ha generado un schedule optimo. Ahorro estimado: 29.40 EUR (vs 14.20 de media semanal).";
+    const lines=doc.splitTextToSize(summ,w-2*m-6);
+    doc.text(lines,m+3,y+5);y+=35;
+
+    // Section 2: Strategy
+    col(15,123,15);doc.setFontSize(12);doc.setFont("helvetica","bold");
+    doc.text("Plan de Orquestacion para Hoy",m,y);y+=8;
+    const blocks=[
+      {h:"00-06h",src:"Red Valle",act:"Cargar bateria",why:"OMIE 0.03 EUR/kWh",sav:"2.40"},
+      {h:"07-10h",src:"FV + Red",act:"Autoconsumo FV",why:"FV creciente",sav:"1.80"},
+      {h:"10-15h",src:"100% FV",act:"FV a Consumo+Bat",why:"FV cubre demanda",sav:"8.50"},
+      {h:"15-18h",src:"FV + Bat",act:"Descarga parcial",why:"FV baja OMIE sube",sav:"3.20"},
+      {h:"18-22h",src:"Bateria",act:"Descarga maxima",why:"Pico OMIE 0.22",sav:"12.60"},
+      {h:"22-00h",src:"Red Valle",act:"Precarga nocturna",why:"OMIE 0.05",sav:"0.90"},
+    ];
+    const bw=(w-2*m)/6;
+    blocks.forEach((b,i)=>{
+      const bx=m+i*bw;
+      bg(bx,y,bw-.5,22,248,249,250);
+      col(0,120,212);doc.setFontSize(8);doc.setFont("helvetica","bold");
+      doc.text(b.h,bx+2,y+5);
+      col(60,60,60);doc.setFontSize(7);doc.setFont("helvetica","normal");
+      doc.text(b.act,bx+2,y+10);
+      doc.text(b.src,bx+2,y+14);
+      col(15,123,15);doc.setFontSize(9);doc.setFont("helvetica","bold");
+      doc.text(b.sav+" EUR",bx+2,y+20);
+    });
+    y+=28;
+
+    // Strategy narratives
+    const narrs=[
+      {t:"Madrugada (00-06h)",txt:"OMIE a 0.03 EUR/kWh. Cargar bateria de "+p.socN+"% a 95%. Coste carga: ~1.80 EUR. Esta energia valdra 12.60 EUR en punta.",clr:[0,120,212]},
+      {t:"Mediodia (10-15h)",txt:"Cielo despejado, FV 92kW pico. Red desconectada. 100% autoconsumo + excedente a bateria. Ahorro vs red: 8.50 EUR.",clr:[247,99,12]},
+      {t:"Pico tarde (18-22h)",txt:"OMIE previsto 0.22-0.24 EUR/kWh. Descarga total bateria. Sin orquestador: 14.20. Con orquestador: 1.60. Ahorro: 12.60 EUR.",clr:[196,43,28]},
+    ];
+    narrs.forEach(n=>{
+      col(n.clr[0],n.clr[1],n.clr[2]);doc.setFontSize(9);doc.setFont("helvetica","bold");
+      doc.text(n.t,m,y);y+=4;
+      col(60,60,60);doc.setFontSize(8);doc.setFont("helvetica","normal");
+      const nl=doc.splitTextToSize(n.txt,w-2*m);doc.text(nl,m,y);y+=nl.length*4+4;
+    });
+
+    // Section 3: Alerts
+    y+=2;col(196,43,28);doc.setFontSize(12);doc.setFont("helvetica","bold");
+    doc.text("Alertas que Requieren Atencion (3)",m,y);y+=8;
+    const alts=[
+      {pri:"ALTA",tit:"Consumo nocturno anomalo Linea 3",desc:"Consumo 02h-05h +34% vs media. Equipo no apagado. Impacto: +420 EUR/mes.",acc:"Revisar apagado auto linea 3."},
+      {pri:"ALTA",tit:"Compresor principal: degradacion",desc:"Consumo +22% en 6m. Fallo mecanico previsto en 45-60 dias.",acc:"Inspeccion rodamientos. Presupuesto motor IE4: ~2,400 EUR."},
+      {pri:"MEDIA",tit:"Cos phi bajo cuadro Compresores",desc:"Factor potencia 0.85 entre 09-14h. Penalizacion: +65 EUR/mes.",acc:"Ampliar condensadores. Coste: 800 EUR. Payback: 12m."},
+    ];
+    alts.forEach(a=>{
+      const isAlta=a.pri==="ALTA";
+      bg(m,y-.5,w-2*m,18,isAlta?255:255,isAlta?240:248,isAlta?240:240);
+      col(isAlta?196:247,isAlta?43:99,isAlta?28:12);doc.setFontSize(8);doc.setFont("helvetica","bold");
+      doc.text(`[${a.pri}] ${a.tit}`,m+2,y+4);
+      col(80,80,80);doc.setFontSize(7.5);doc.setFont("helvetica","normal");
+      doc.text(a.desc,m+2,y+9);
+      col(15,123,15);doc.setFont("helvetica","bold");
+      doc.text("Accion: "+a.acc,m+2,y+14);
+      y+=20;
+    });
+
+    // Section 4: Weather
+    y+=4;col(247,99,12);doc.setFontSize(12);doc.setFont("helvetica","bold");
+    doc.text("Prevision Solar (5 dias)",m,y);y+=7;
+    const fcst=[{d:"Hoy",t:"22C",n:"10%",pv:"680 kWh"},{d:"Manana",t:"19C",n:"40%",pv:"520 kWh"},{d:"Pasado",t:"16C",n:"80%",pv:"180 kWh"},{d:"Jueves",t:"18C",n:"55%",pv:"380 kWh"},{d:"Viernes",t:"24C",n:"5%",pv:"720 kWh"}];
+    const fw=(w-2*m)/5;
+    fcst.forEach((f,i)=>{
+      const fx=m+i*fw;
+      bg(fx,y,fw-1,18,248,249,250);
+      col(60,60,60);doc.setFontSize(8);doc.setFont("helvetica","bold");
+      doc.text(f.d,fx+2,y+5);
+      doc.setFont("helvetica","normal");doc.setFontSize(7);
+      doc.text(`${f.t} - Nubes ${f.n}`,fx+2,y+10);
+      col(247,99,12);doc.setFontSize(9);doc.setFont("helvetica","bold");
+      doc.text(f.pv,fx+2,y+15);
+    });
+    y+=24;
+
+    // Section 5: KPIs
+    col(180,160,255);doc.setFontSize(12);doc.setFont("helvetica","bold");
+    col(80,80,80);doc.text("KPIs de la Instalacion",m,y);y+=7;
+    const kpis=[{l:"Consumo ayer",v:"14,200 kWh"},{l:"Autoconsumo FV",v:"62%"},{l:"SoH Bateria",v:"96.5%"},{l:"Ahorro mes",v:"824 EUR"}];
+    const kw=(w-2*m)/4;
+    kpis.forEach((k,i)=>{
+      const kx=m+i*kw;
+      bg(kx,y,kw-1,14,248,249,250);
+      col(120,120,120);doc.setFontSize(7);doc.setFont("helvetica","normal");
+      doc.text(k.l,kx+2,y+5);
+      col(30,30,30);doc.setFontSize(10);doc.setFont("helvetica","bold");
+      doc.text(k.v,kx+2,y+11);
+    });
+    y+=20;
+
+    // Section 6: Tasks
+    if(y>250){doc.addPage();y=15;}
+    col(15,123,15);doc.setFontSize(12);doc.setFont("helvetica","bold");
+    doc.text("Tareas Recomendadas para Hoy",m,y);y+=7;
+    const tasks=[
+      {t:"[ ] Revisar apagado automatico Linea 3",p:"URGENTE - Produccion - 30 min"},
+      {t:"[ ] Programar inspeccion compresor principal",p:"IMPORTANTE - Mantenimiento"},
+      {t:"[ ] Verificar compensacion excedentes febrero",p:"NORMAL - Admin - 15 min"},
+      {t:"[x] El orquestador Seinon IA se encarga del resto",p:"AUTOMATICO - 24/7"},
+    ];
+    tasks.forEach(tk=>{
+      col(30,30,30);doc.setFontSize(9);doc.setFont("helvetica","normal");
+      doc.text(tk.t,m,y);
+      col(120,120,120);doc.setFontSize(7);
+      doc.text(tk.p,m+5,y+4);
+      y+=9;
+    });
+
+    // Total summary bar
+    y+=4;bg(m,y,w-2*m,14,15,123,15);
+    col(255,255,255);doc.setFontSize(11);doc.setFont("helvetica","bold");
+    doc.text("AHORRO TOTAL ESTIMADO HOY: 29.40 EUR",m+4,y+9);
+    y+=20;
+
+    // Footer
+    ln(m,y,w-m);y+=5;
+    col(160,160,160);doc.setFontSize(7);doc.setFont("helvetica","normal");
+    doc.text("Este reporte se genera automaticamente cada dia a las 06:00 por Seinon IA.",m,y);
+    doc.text("Planta 4 - Certex Innova S.L. - Industrial Shields RPi PLC 21+",m,y+4);
+    doc.text(`Generado: ${fecha} - ${hora}`,m,y+8);
+    doc.text("Pagina 1/1",w-m-20,y+8);
+
+    doc.save(`Reporte_Seinon_${hoy.toISOString().slice(0,10)}.pdf`);
+  };
+
   return(<>
     <Hd t="Reportes" sub="Informes diarios, semanales y mensuales generados por IA">
       <div style={{display:"flex",gap:6}}>
-        <button style={{padding:"5px 12px",borderRadius:5,border:"none",background:A,color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><Download size={12}/> Descargar PDF</button>
+        <button onClick={genPDF} style={{padding:"5px 12px",borderRadius:5,border:"none",background:A,color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><Download size={12}/> Descargar PDF</button>
         <button style={{padding:"5px 12px",borderRadius:5,border:`1px solid ${A}`,background:"transparent",color:A,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><MessageCircle size={12}/> Enviar por Telegram</button>
       </div>
     </Hd>
