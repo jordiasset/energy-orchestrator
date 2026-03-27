@@ -99,41 +99,15 @@ function Landing({onLogin}){
     setPdfLoading(true);setPdfError(null);setPdfData(null);setPdfName(file.name);
     try{
       const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=()=>rej(new Error("Error leyendo archivo"));r.readAsDataURL(file)});
-      const resp=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:[
-            {type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},
-            {type:"text",text:`Analiza esta factura de electricidad espanola y extrae los siguientes datos en JSON puro (sin markdown, sin backticks, solo el JSON):
-{
-  "consumo_mensual_kwh": numero (consumo total en kWh del periodo),
-  "potencia_contratada_kw": numero (maxima potencia contratada en kW),
-  "tarifa": "indexada" o "fija" o "mixta" (tipo de tarifa detectada),
-  "coste_total_eur": numero (importe total de la factura en EUR),
-  "precio_medio_kwh": numero (precio medio por kWh),
-  "periodo": "texto del periodo de facturacion",
-  "comercializadora": "nombre de la comercializadora",
-  "cups": "codigo CUPS si aparece",
-  "tipo_tarifa": "2.0TD o 3.0TD o 6.1TD etc",
-  "potencia_p1_kw": numero o null,
-  "potencia_p2_kw": numero o null,
-  "consumo_p1_kwh": numero o null,
-  "consumo_p2_kwh": numero o null,
-  "consumo_p3_kwh": numero o null,
-  "penalizacion_reactiva": numero o 0,
-  "tiene_fv": true o false (si menciona autoconsumo o FV),
-  "resumen": "breve descripcion de 2-3 frases de lo que muestra la factura"
-}
-Devuelve SOLO el JSON, nada mas.`}
-          ]}]
-        })
+      const resp=await fetch("/api/analyze",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({pdf_base64:base64})
       });
-      const data=await resp.json();
-      const txt=data.content?.map(c=>c.text||"").join("")||"";
-      const clean=txt.replace(/```json|```/g,"").trim();
-      const parsed=JSON.parse(clean);
+      const result=await resp.json();
+      if(result.error)throw new Error(result.error);
+      const parsed=result.data||JSON.parse(result.raw);
       setPdfData(parsed);
-      // Auto-fill form
       setForm(f=>({
         ...f,
         consumo:Math.round(parsed.consumo_mensual_kwh||f.consumo),
@@ -142,8 +116,8 @@ Devuelve SOLO el JSON, nada mas.`}
         tipo:parsed.tipo_tarifa?.startsWith("6")?"industrial":parsed.tipo_tarifa?.startsWith("3")?"comercial":"comercial",
         fv:parsed.tiene_fv?50:0,
       }));
-      setStep(2); // jump to FV/battery step
-    }catch(e){setPdfError("No se pudo analizar la factura. Verifica que es un PDF de una factura electrica valida. Error: "+e.message)}
+      setStep(2);
+    }catch(e){setPdfError("No se pudo analizar la factura. "+e.message)}
     setPdfLoading(false);
   };
 
