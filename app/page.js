@@ -81,8 +81,8 @@ export default function App(){
   const dec=omieN>.12?"BATERIA":pvN>30?"FOTOVOLTAICA":"RED",decC=dec==="BATERIA"?D:dec==="FOTOVOLTAICA"?G:A;
   const sf="#fff",sf2="#f8f9fa",tx="#111",tx2="#666",bd="#e2e5e9",sh="0 1px 8px rgba(0,0,0,.06)";
   const p={sf,sf2,tx,tx2,bd,sh,A,G,W,D,P,pvN,socN,gridN,conN,omieN,dec,decC,tick,HR,mob};
-  const nav=[{id:"dash",ic:BarChart3,l:"Dashboard"},{id:"monitor",ic:Eye,l:"Monitorizacion"},{id:"orq",ic:Brain,l:"Orquestacion IA"},{id:"alertas",ic:Bell,l:"Alertas"},{id:"fin",ic:CircleDollarSign,l:"Financiero"},{id:"sys",ic:Layers,l:"Sistema"}];
-  const R=()=>{switch(tab){case"dash":return <Pg1 {...p}/>;case"monitor":return <Pg2 {...p}/>;case"orq":return <Pg3 {...p}/>;case"alertas":return <Pg4 {...p}/>;case"fin":return <Pg5 {...p}/>;case"sys":return <Pg6 {...p}/>;default:return null}};
+  const nav=[{id:"dash",ic:BarChart3,l:"Dashboard"},{id:"monitor",ic:Eye,l:"Monitorizacion"},{id:"orq",ic:Brain,l:"Orquestacion IA"},{id:"report",ic:FileText,l:"Reportes"},{id:"alertas",ic:Bell,l:"Alertas"},{id:"fin",ic:CircleDollarSign,l:"Financiero"},{id:"sys",ic:Layers,l:"Sistema"}];
+  const R=()=>{switch(tab){case"dash":return <Pg1 {...p}/>;case"monitor":return <Pg2 {...p}/>;case"orq":return <Pg3 {...p}/>;case"report":return <PgReport {...p}/>;case"alertas":return <Pg4 {...p}/>;case"fin":return <Pg5 {...p}/>;case"sys":return <Pg6 {...p}/>;default:return null}};
   return(
     <div style={{width:"100%",height:"100vh",background:"#f0f2f5",color:tx,fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}@keyframes glow{0%,100%{box-shadow:0 0 6px ${A}33}50%{box-shadow:0 0 16px ${A}55}}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
@@ -349,6 +349,199 @@ function Pg3(p){
         {decs.map((d,i)=>{const Ic=d.ic;return <div key={i} style={{padding:"8px 6px",borderRadius:5,border:`1px solid ${p.bd}`,background:p.sf2,textAlign:"center"}}><Ic size={16} color={d.c} style={{margin:"0 auto 3px",display:"block"}}/><div style={{fontSize:9,fontWeight:700}}>{d.h}</div><div style={{fontSize:8,marginTop:1}}>{d.a}</div><div style={{fontSize:11,fontWeight:700,color:G,marginTop:3}}>{d.s}</div></div>})}
       </div>
       <div style={{marginTop:6,padding:6,borderRadius:5,background:`${G}06`,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:11,color:G,fontWeight:600}}>Total ahorro IA hoy</span><span style={{fontSize:18,fontWeight:700,color:G}}>29.40</span></div>
+    </Cd>
+  </>);
+}
+
+// ========== REPORTES ==========
+function PgReport(p){
+  const hoy=new Date();
+  const fecha=hoy.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const hora=hoy.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+  const reportes=[
+    {fecha:"27/03/2026",tipo:"Diario",estado:"Enviado",canal:"Telegram + Email",ahorro:"29.40"},
+    {fecha:"26/03/2026",tipo:"Diario",estado:"Enviado",canal:"Telegram + Email",ahorro:"31.20"},
+    {fecha:"25/03/2026",tipo:"Diario",estado:"Enviado",canal:"Telegram + Email",ahorro:"26.80"},
+    {fecha:"24/03/2026",tipo:"Diario",estado:"Enviado",canal:"Telegram + Email",ahorro:"34.10"},
+    {fecha:"21/03/2026",tipo:"Semanal",estado:"Enviado",canal:"Email + PDF",ahorro:"191.20"},
+    {fecha:"01/03/2026",tipo:"Mensual",estado:"Enviado",canal:"Email + PDF",ahorro:"824.00"},
+  ];
+  return(<>
+    <Hd t="Reportes" sub="Informes diarios, semanales y mensuales generados por IA">
+      <div style={{display:"flex",gap:6}}>
+        <button style={{padding:"5px 12px",borderRadius:5,border:"none",background:A,color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><Download size={12}/> Descargar PDF</button>
+        <button style={{padding:"5px 12px",borderRadius:5,border:`1px solid ${A}`,background:"transparent",color:A,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><MessageCircle size={12}/> Enviar por Telegram</button>
+      </div>
+    </Hd>
+
+    {/* DAILY REPORT - THE MAIN THING */}
+    <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:0,marginBottom:12,overflow:"hidden"}}>
+      {/* Report Header */}
+      <div style={{background:`linear-gradient(135deg,${A},${P})`,padding:"16px 20px",color:"#fff"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
+          <div>
+            <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Reporte Diario Seinon IA</div>
+            <div style={{fontSize:20,fontWeight:700}}>Buenos dias, Jordi</div>
+            <div style={{fontSize:12,opacity:.8,marginTop:2}}>{fecha} - Generado a las 06:00</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <div style={{background:"rgba(255,255,255,.2)",borderRadius:6,padding:"8px 14px",textAlign:"center"}}><div style={{fontSize:18,fontWeight:700}}>29.40</div><div style={{fontSize:8,opacity:.7}}>Ahorro previsto hoy</div></div>
+            <div style={{background:"rgba(255,255,255,.2)",borderRadius:6,padding:"8px 14px",textAlign:"center"}}><div style={{fontSize:18,fontWeight:700}}>3</div><div style={{fontSize:8,opacity:.7}}>Alertas pendientes</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{padding:16}}>
+        {/* Section 1: Executive Summary */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:24,height:24,borderRadius:6,background:`${A}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><Brain size={13} color={A}/></div><div style={{fontSize:13,fontWeight:700}}>Resumen Ejecutivo</div></div>
+          <div style={{padding:12,borderRadius:6,background:p.sf2,border:`1px solid ${p.bd}`,fontSize:11,lineHeight:1.6}}>
+            Hoy es un <strong style={{color:G}}>dia favorable para el ahorro energetico</strong>. La prevision meteorologica indica cielo despejado con produccion FV estimada de <strong>680 kWh</strong> (92kW pico a las 13:00). Los precios OMIE muestran un <strong style={{color:D}}>spread alto de 0.18/kWh</strong> entre valle (0.03) y punta (0.21), lo que hace el arbitraje con bateria muy rentable. El orquestador ha generado un schedule optimo que prioriza: carga nocturna completa, autoconsumo FV total de 10:00-15:00, y descarga de bateria en pico de 18:00-22:00. <strong>Ahorro estimado: 29.40 (vs 14.20 de media semanal).</strong>
+          </div>
+        </div>
+
+        {/* Section 2: Strategy */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:24,height:24,borderRadius:6,background:`${G}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><Zap size={13} color={G}/></div><div style={{fontSize:13,fontWeight:700}}>Plan de Orquestacion para Hoy</div></div>
+          <div className="gDecs" style={{gap:4,marginBottom:10}}>
+            {decs.map((d,i)=>{const Ic=d.ic;return(
+              <div key={i} style={{padding:8,borderRadius:6,border:`1px solid ${p.bd}`,background:p.sf2,textAlign:"center"}}>
+                <Ic size={16} color={d.c} style={{margin:"0 auto 3px",display:"block"}}/>
+                <div style={{fontSize:9,fontWeight:700,color:d.c}}>{d.h}</div>
+                <div style={{fontSize:9,marginTop:2}}>{d.a}</div>
+                <div style={{fontSize:8,color:p.tx2}}>{d.f}</div>
+                <div style={{fontSize:11,fontWeight:700,color:G,marginTop:3}}>{d.s}</div>
+              </div>
+            )})}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+            <div style={{padding:10,borderRadius:6,background:`${A}06`,border:`1px solid ${A}12`,fontSize:10,lineHeight:1.5}}>
+              <strong style={{color:A}}>🌙 00:00-06:00 Valle</strong><br/>
+              OMIE a 0.03/kWh. Cargar bateria de {p.socN}% a 95%. Coste carga: ~1.80. Esta energia valdra 12.60 cuando la descarguemos en punta.
+            </div>
+            <div style={{padding:10,borderRadius:6,background:`${G}06`,border:`1px solid ${G}12`,fontSize:10,lineHeight:1.5}}>
+              <strong style={{color:G}}>☀️ 10:00-15:00 Solar</strong><br/>
+              FV estimada 92kW pico. Red desconectada. 100% autoconsumo + excedente a bateria. Ahorro vs red: 8.50. Cero euros pagados a comercializadora.
+            </div>
+            <div style={{padding:10,borderRadius:6,background:`${D}06`,border:`1px solid ${D}12`,fontSize:10,lineHeight:1.5}}>
+              <strong style={{color:D}}>🔴 18:00-22:00 Pico</strong><br/>
+              OMIE previsto 0.21-0.24/kWh. Descarga total bateria. Sin orquestador: 14.20. Con orquestador: 1.60. Ahorro neto en este bloque: 12.60.
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Alerts to resolve */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:24,height:24,borderRadius:6,background:`${D}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><AlertTriangle size={13} color={D}/></div><div style={{fontSize:13,fontWeight:700}}>Alertas que Requieren Atencion</div><Bg text="3 pendientes" color={D}/></div>
+          {[
+            {pri:"ALTA",tit:"Consumo nocturno anomalo en Linea 3",desc:"Detectado por IA: consumo entre 02h-05h un 34% superior a la media. Posible equipo no apagado. Impacto: +420/mes si no se corrige.",acc:"Revisar programacion de apagado automatico de linea 3. Verificar con jefe de planta.",c:D},
+            {pri:"ALTA",tit:"Compresor principal: degradacion detectada",desc:"El consumo del compresor ha subido un 22% en 6 meses. El modelo IA predice fallo mecanico en 45-60 dias si no se interviene.",acc:"Programar inspeccion de rodamientos y revision del arrancador suave. Presupuesto motor IE4: ~2,400.",c:D},
+            {pri:"MEDIA",tit:"Cos phi bajo en cuadro Compresores",desc:"Factor de potencia cayendo a 0.85 entre 09h-14h. Tendencia descendente 3 semanas. Penalizacion estimada: +65/mes.",acc:"Ampliar bateria de condensadores. Coste estimado: 800. Payback: 12 meses.",c:W},
+          ].map((a,i)=>(
+            <div key={i} style={{padding:12,borderRadius:6,border:`1px solid ${a.c}20`,background:`${a.c}04`,marginBottom:8}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                <Bg text={a.pri} color={a.c}/>
+                <span style={{fontSize:12,fontWeight:700}}>{a.tit}</span>
+              </div>
+              <div style={{fontSize:10,color:p.tx2,marginBottom:6,lineHeight:1.4}}>{a.desc}</div>
+              <div style={{padding:8,borderRadius:4,background:`${G}06`,border:`1px solid ${G}12`,fontSize:10}}>
+                <strong style={{color:G}}>Accion recomendada:</strong> {a.acc}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Section 4: Weather + Solar forecast */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:24,height:24,borderRadius:6,background:`${W}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><CloudSun size={13} color={W}/></div><div style={{fontSize:13,fontWeight:700}}>Prevision Meteorologica y Solar</div></div>
+          <div className="g5" style={{gap:6}}>
+            {forecast.map(f=>{const Ic=f.ic;return(
+              <div key={f.d} style={{padding:10,borderRadius:6,background:p.sf2,border:`1px solid ${p.bd}`,textAlign:"center"}}>
+                <div style={{fontSize:10,fontWeight:600,marginBottom:4}}>{f.d}</div>
+                <Ic size={24} color={f.c} style={{margin:"0 auto 4px",display:"block"}}/>
+                <div style={{fontSize:10,color:p.tx2}}>{f.t}C - Nubes {f.n}%</div>
+                <div style={{fontSize:16,fontWeight:700,color:f.c,marginTop:4}}>{f.pv} kWh</div>
+                <div style={{fontSize:9,color:p.tx2}}>Produccion FV est.</div>
+              </div>
+            )})}
+          </div>
+          <div style={{marginTop:8,padding:8,borderRadius:4,background:`${W}06`,border:`1px solid ${W}12`,fontSize:10,lineHeight:1.4}}>
+            <strong style={{color:W}}>Nota IA:</strong> Pasado manana se esperan nubes al 80% (solo 180 kWh). El orquestador <strong>precargara bateria manana por la noche</strong> a tarifa valle para compensar la caida de produccion FV. No se requiere accion manual.
+          </div>
+        </div>
+
+        {/* Section 5: KPIs snapshot */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:24,height:24,borderRadius:6,background:`${P}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><BarChart3 size={13} color={P}/></div><div style={{fontSize:13,fontWeight:700}}>KPIs de la Instalacion</div></div>
+          <div className="g4" style={{marginBottom:0}}>
+            {[
+              {l:"Consumo ayer",v:"14,200 kWh",c:A,sub:"vs 14,800 semana ant."},
+              {l:"Autoconsumo FV",v:"62%",c:G,sub:"Objetivo: 70%"},
+              {l:"SoH Bateria",v:"96.5%",c:G,sub:"Ciclos: 234/6000"},
+              {l:"Ahorro acumulado mes",v:"824",c:G,sub:"Objetivo: 900"},
+            ].map((k,i)=>(
+              <div key={i} style={{padding:10,borderRadius:6,background:p.sf2,border:`1px solid ${p.bd}`}}>
+                <div style={{fontSize:9,color:p.tx2}}>{k.l}</div>
+                <div style={{fontSize:18,fontWeight:700,color:k.c,marginTop:2}}>{k.v}</div>
+                <div style={{fontSize:9,color:p.tx2,marginTop:2}}>{k.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 6: What to do today */}
+        <div style={{marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:24,height:24,borderRadius:6,background:`${G}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><CheckCircle size={13} color={G}/></div><div style={{fontSize:13,fontWeight:700}}>Tareas Recomendadas para Hoy</div></div>
+          {[
+            {tarea:"Revisar apagado automatico Linea 3",pri:"Urgente",area:"Produccion",tiempo:"30 min",c:D},
+            {tarea:"Programar inspeccion compresor principal",pri:"Importante",area:"Mantenimiento",tiempo:"Llamar proveedor",c:W},
+            {tarea:"Verificar compensacion excedentes febrero",pri:"Normal",area:"Admin",tiempo:"15 min",c:A},
+            {tarea:"Nada mas - el orquestador se encarga del resto",pri:"Auto",area:"Seinon IA",tiempo:"24/7",c:G},
+          ].map((t,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<3?`1px solid ${p.bd}`:"none"}}>
+              <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${t.c}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
+                {t.pri==="Auto"&&<CheckCircle size={14} color={G}/>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:t.pri==="Auto"?400:600,color:t.pri==="Auto"?p.tx2:p.tx}}>{t.tarea}</div>
+                <div style={{fontSize:9,color:p.tx2}}>{t.area} - {t.tiempo}</div>
+              </div>
+              <Bg text={t.pri} color={t.c}/>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{marginTop:12,padding:10,borderRadius:6,background:p.sf2,border:`1px solid ${p.bd}`,textAlign:"center",fontSize:10,color:p.tx2}}>
+          Este reporte se genera automaticamente cada dia a las 06:00 y se envia por Telegram y Email.<br/>
+          <strong>Seinon IA</strong> - Orquestacion Energetica Inteligente - Planta 4 - Certex Innova S.L.
+        </div>
+      </div>
+    </Cd>
+
+    {/* REPORT HISTORY */}
+    <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <div style={{fontSize:13,fontWeight:600}}>Historico de Reportes</div>
+        <div style={{display:"flex",gap:4}}>
+          <Bg text="Diario" color={A}/><Bg text="Semanal" color={P}/><Bg text="Mensual" color={W}/>
+        </div>
+      </div>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10,minWidth:500}}>
+        <thead><tr style={{borderBottom:`2px solid ${p.bd}`}}>
+          {["Fecha","Tipo","Canal","Ahorro","Estado",""].map(h=><th key={h} style={{padding:"6px 8px",textAlign:"left",fontWeight:600,fontSize:9,color:p.tx2}}>{h}</th>)}
+        </tr></thead>
+        <tbody>{reportes.map((r,i)=>(
+          <tr key={i} style={{borderBottom:`1px solid ${p.bd}`}}>
+            <td style={{padding:"6px 8px",fontWeight:500}}>{r.fecha}</td>
+            <td style={{padding:"6px 8px"}}><Bg text={r.tipo} color={r.tipo==="Diario"?A:r.tipo==="Semanal"?P:W}/></td>
+            <td style={{padding:"6px 8px",color:p.tx2}}>{r.canal}</td>
+            <td style={{padding:"6px 8px",fontWeight:700,color:G}}>{r.ahorro}</td>
+            <td style={{padding:"6px 8px"}}><Bg text={r.estado} color={G}/></td>
+            <td style={{padding:"6px 8px"}}><button style={{fontSize:9,color:A,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}>Ver</button></td>
+          </tr>
+        ))}</tbody>
+      </table></div>
     </Cd>
   </>);
 }
