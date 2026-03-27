@@ -73,7 +73,285 @@ const sAlerts=[
 ];
 
 // ========== APP ==========
-export default function App(){
+export default function Root(){
+  const[logged,setLogged]=useState(false);
+  const[scrollTo,setScrollTo]=useState(null);
+  if(!logged) return <Landing onLogin={()=>setLogged(true)} scrollTo={scrollTo} setScrollTo={setScrollTo}/>;
+  return <AppDash onLogout={()=>setLogged(false)}/>;
+}
+
+// ========== LANDING PAGE ==========
+function Landing({onLogin}){
+  const[step,setStep]=useState(0);
+  const[mob,setMob]=useState(false);
+  const[form,setForm]=useState({consumo:15000,potencia:200,fv:0,bat:0,tarifa:"indexada",tipo:"industrial",turnos:1,climatizacion:true});
+  const[showCalc,setShowCalc]=useState(false);
+  const[loginOpen,setLoginOpen]=useState(false);
+  const[anim,setAnim]=useState(0);
+  useEffect(()=>{const c=()=>setMob(window.innerWidth<768);c();window.addEventListener("resize",c);return()=>window.removeEventListener("resize",c)},[]);
+  useEffect(()=>{const iv=setInterval(()=>setAnim(a=>a+1),2000);return()=>clearInterval(iv)},[]);
+
+  // Savings calculator
+  const consumoAnual=form.consumo*12;
+  const costeActual=consumoAnual*(form.tarifa==="indexada"?.12:.14);
+  const ahorroMonitor=costeActual*.08; // 8% solo monitorizacion
+  const ahorroOrqFV=form.fv>0?form.fv*1400*.13*.62:0; // autoconsumo
+  const ahorroOrqBat=form.bat>0?form.bat*365*.14*.7:0; // arbitraje diario
+  const ahorroOrqShift=costeActual*.05; // demand shifting
+  const ahorroPotencia=form.potencia>100?form.potencia*.15*12*3.5:0; // optimizar pot contratada
+  const ahorroTotal=Math.round(ahorroMonitor+ahorroOrqFV+ahorroOrqBat+ahorroOrqShift+ahorroPotencia);
+  const pctAhorro=Math.min(35,Math.round(ahorroTotal/costeActual*100));
+  const roi=Math.round(4800/Math.max(1,ahorroTotal/12));
+
+  const feats=[
+    {ic:"📊",t:"Monitorizacion en Tiempo Real",d:"8+ puntos de medida, gemelo digital de tu planta, analisis por zona. Detecta donde gastas mas y por que."},
+    {ic:"🤖",t:"Orquestacion IA",d:"Algoritmo LSTM + FlexMeasures que decide cada hora si comprar red, usar FV o descargar bateria. Aprende de tu patron."},
+    {ic:"💰",t:"Ahorro Automatico",d:"Arbitraje OMIE, autoconsumo optimizado, demand shifting. El sistema trabaja 24/7 para reducir tu factura."},
+    {ic:"🔮",t:"Prediccion Avanzada",d:"Predice consumo a 30 dias, precios OMIE, produccion solar. Detecta anomalias antes de que sean problemas."},
+    {ic:"📋",t:"Reportes Diarios",d:"Cada manana recibes un briefing: que va a hacer el orquestador, alertas pendientes, ahorro previsto."},
+    {ic:"⚡",t:"Hardware Industrial",d:"Industrial Shields RPi PLC 21+, doble RS-485, reles, Modbus. Instalacion plug&play en tu cuadro electrico."},
+  ];
+
+  const steps=[
+    {t:"Tipo de instalacion",fields:[{k:"tipo",l:"Tipo",opts:["industrial","comercial","terciario"]},{k:"turnos",l:"Turnos de trabajo",opts:[1,2,3]}]},
+    {t:"Consumo y potencia",fields:[{k:"consumo",l:"Consumo mensual (kWh)",type:"range",min:1000,max:100000,step:500},{k:"potencia",l:"Potencia contratada (kW)",type:"range",min:20,max:2000,step:10}]},
+    {t:"Generacion propia",fields:[{k:"fv",l:"Instalacion FV (kWp)",type:"range",min:0,max:500,step:5},{k:"bat",l:"Bateria (kWh)",type:"range",min:0,max:200,step:5}]},
+    {t:"Tarifa",fields:[{k:"tarifa",l:"Tipo tarifa",opts:["indexada","fija","mixta"]},{k:"climatizacion",l:"Climatizacion/Frio industrial",opts:[true,false]}]},
+  ];
+
+  const insights=["OMIE esta a 0.03 EUR/kWh... cargando bateria","Produccion FV: 92kW pico. Red desconectada","Anomalia detectada: consumo +34% en linea 3","Ahorro hoy: 29.40 EUR. Acumulado mes: 824 EUR"];
+
+  return(
+    <div style={{width:"100%",minHeight:"100vh",background:"#fff",fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",color:"#111",overflowX:"hidden"}}>
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.5}}@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}@keyframes typing{from{width:0}to{width:100%}}@keyframes blink{50%{border-color:transparent}}.landBtn{padding:12px 28px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:8px}.landBtn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+@media(max-width:768px){.heroGrid{flex-direction:column!important;text-align:center}.featGrid{grid-template-columns:1fr!important}.calcGrid{grid-template-columns:1fr!important}.stepGrid{grid-template-columns:1fr!important}}`}</style>
+
+      {/* NAV */}
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:"rgba(255,255,255,.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid #e5e7eb",padding:"0 24px",height:56,display:"flex",alignItems:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#0078D4,#60CDFF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>⚡</div>
+          <span style={{fontWeight:700,fontSize:18}}>Seinon</span>
+        </div>
+        <div style={{flex:1}}/>
+        {!mob&&<div style={{display:"flex",gap:24,fontSize:13,color:"#666"}}>
+          <a href="#features" style={{textDecoration:"none",color:"inherit",cursor:"pointer"}}>Funcionalidades</a>
+          <a href="#calculator" style={{textDecoration:"none",color:"inherit",cursor:"pointer"}}>Calculadora</a>
+          <a href="#how" style={{textDecoration:"none",color:"inherit",cursor:"pointer"}}>Como funciona</a>
+        </div>}
+        <div style={{flex:1}}/>
+        <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{background:"#0078D4",color:"#fff",padding:"8px 20px",fontSize:12}}>Acceder</button>
+      </nav>
+
+      {/* HERO */}
+      <section style={{paddingTop:100,paddingBottom:60,background:"linear-gradient(135deg,#f8faff 0%,#eef4ff 50%,#f0f7ff 100%)",overflow:"hidden"}}>
+        <div className="heroGrid" style={{maxWidth:1100,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",gap:50}}>
+          <div style={{flex:1,animation:"fadeUp .8s ease"}}>
+            <div style={{display:"inline-block",padding:"4px 12px",borderRadius:20,background:"#0078D415",color:"#0078D4",fontSize:12,fontWeight:600,marginBottom:16}}>🤖 Orquestacion Energetica con IA</div>
+            <h1 style={{fontSize:mob?32:48,fontWeight:800,lineHeight:1.1,margin:"0 0 16px",letterSpacing:-.5}}>Tu planta consume.<br/><span style={{color:"#0078D4"}}>Seinon decide cuando.</span></h1>
+            <p style={{fontSize:17,color:"#555",lineHeight:1.6,margin:"0 0 24px",maxWidth:500}}>Monitorizacion inteligente + orquestacion IA que elige en tiempo real si comprar red, usar solar o descargar bateria. <strong>Ahorra hasta un 35% en tu factura electrica.</strong></p>
+            <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+              <button onClick={()=>{setShowCalc(true);document.getElementById("calculator")?.scrollIntoView({behavior:"smooth"})}} className="landBtn" style={{background:"#0078D4",color:"#fff"}}>Calcula tu ahorro →</button>
+              <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{background:"#fff",color:"#111",border:"1px solid #ddd"}}>Ver demo en vivo</button>
+            </div>
+            <div style={{display:"flex",gap:20,marginTop:24}}>
+              {[["35%","ahorro medio"],["24/7","autonomo"],["<6 meses","payback"]].map(([v,l])=>(
+                <div key={l}><div style={{fontSize:22,fontWeight:700,color:"#0078D4"}}>{v}</div><div style={{fontSize:11,color:"#888"}}>{l}</div></div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:1,position:"relative",animation:"fadeUp 1s ease .2s both"}}>
+            <div style={{background:"#fff",borderRadius:12,boxShadow:"0 20px 60px rgba(0,0,0,.1)",padding:16,border:"1px solid #e5e7eb"}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><div style={{width:8,height:8,borderRadius:"50%",background:"#0F7B0F",animation:"pulse2 2s infinite"}}/><span style={{fontSize:10,color:"#0F7B0F",fontWeight:600}}>EN VIVO — Planta Demo</span></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6,marginBottom:10}}>
+                {[["☀️ FV","67 kW","#F7630C"],["🔋 Bat","82%","#B4A0FF"],["⚡ Red","12 kW","#0078D4"],["💰 OMIE","0.08","#0F7B0F"]].map(([l,v,c])=>(
+                  <div key={l} style={{padding:8,borderRadius:6,background:"#f8f9fa",border:"1px solid #e5e7eb",textAlign:"center"}}>
+                    <div style={{fontSize:9,color:"#888"}}>{l}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:c}}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{padding:8,borderRadius:6,background:"#0078D408",border:"1px solid #0078D415",display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:14}}>🤖</span>
+                <div style={{fontSize:10,color:"#333"}}>{insights[anim%insights.length]}</div>
+              </div>
+            </div>
+            <div style={{position:"absolute",bottom:-20,right:-20,width:100,height:100,borderRadius:12,background:"linear-gradient(135deg,#0F7B0F,#4CAF50)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 10px 30px rgba(15,123,15,.3)",animation:"float 3s ease infinite"}}>
+              <div style={{fontSize:24,fontWeight:800}}>-35%</div>
+              <div style={{fontSize:8}}>factura electrica</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section id="features" style={{padding:"60px 24px",maxWidth:1100,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:40}}>
+          <h2 style={{fontSize:32,fontWeight:700,margin:"0 0 8px"}}>Todo lo que necesitas para controlar tu energia</h2>
+          <p style={{fontSize:15,color:"#666"}}>Monitorizacion + Orquestacion + IA Predictiva en una sola plataforma</p>
+        </div>
+        <div className="featGrid" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:20}}>
+          {feats.map((f,i)=>(
+            <div key={i} style={{padding:24,borderRadius:10,border:"1px solid #e5e7eb",background:"#fff",transition:"all .3s",cursor:"default"}} onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 30px rgba(0,0,0,.08)";e.currentTarget.style.transform="translateY(-4px)"}} onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none"}}>
+              <div style={{fontSize:28,marginBottom:10}}>{f.ic}</div>
+              <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>{f.t}</div>
+              <div style={{fontSize:13,color:"#666",lineHeight:1.5}}>{f.d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CALCULATOR */}
+      <section id="calculator" style={{padding:"60px 24px",background:"#f8faff"}}>
+        <div style={{maxWidth:1100,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:40}}>
+            <h2 style={{fontSize:32,fontWeight:700,margin:"0 0 8px"}}>Calcula tu ahorro en 60 segundos</h2>
+            <p style={{fontSize:15,color:"#666"}}>Responde 4 preguntas y te decimos cuanto puedes ahorrar con Seinon</p>
+          </div>
+
+          <div className="calcGrid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
+            {/* LEFT: Questionnaire */}
+            <div style={{background:"#fff",borderRadius:12,padding:24,border:"1px solid #e5e7eb",boxShadow:"0 4px 20px rgba(0,0,0,.04)"}}>
+              {/* Progress */}
+              <div style={{display:"flex",gap:4,marginBottom:20}}>
+                {steps.map((_,i)=>(<div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=step?"#0078D4":"#e5e7eb",transition:"all .3s"}}/>))}
+              </div>
+              <div style={{fontSize:11,color:"#888",marginBottom:4}}>Paso {step+1} de {steps.length}</div>
+              <div style={{fontSize:18,fontWeight:700,marginBottom:16}}>{steps[step].t}</div>
+
+              {steps[step].fields.map(f=>(
+                <div key={f.k} style={{marginBottom:18}}>
+                  <div style={{fontSize:12,fontWeight:600,marginBottom:6,color:"#444"}}>{f.l}</div>
+                  {f.opts?(
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {f.opts.map(o=>{const sel=form[f.k]===o;return(
+                        <button key={String(o)} onClick={()=>setForm({...form,[f.k]:o})} style={{padding:"8px 16px",borderRadius:6,border:sel?"2px solid #0078D4":"1px solid #ddd",background:sel?"#0078D410":"#fff",color:sel?"#0078D4":"#666",fontSize:12,fontWeight:sel?600:400,cursor:"pointer",fontFamily:"inherit",transition:"all .2s"}}>
+                          {o===true?"Si":o===false?"No":typeof o==="number"?`${o} turno${o>1?"s":""}`:o.charAt(0).toUpperCase()+o.slice(1)}
+                        </button>
+                      )})}
+                    </div>
+                  ):(
+                    <div>
+                      <input type="range" min={f.min} max={f.max} step={f.step} value={form[f.k]} onChange={e=>setForm({...form,[f.k]:+e.target.value})} style={{width:"100%",accentColor:"#0078D4",height:6}}/>
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#888",marginTop:2}}>
+                        <span>{f.min.toLocaleString()}</span>
+                        <span style={{fontSize:16,fontWeight:700,color:"#0078D4"}}>{form[f.k].toLocaleString()}{f.k==="consumo"?" kWh/mes":f.k==="potencia"?" kW":f.k==="fv"?" kWp":" kWh"}</span>
+                        <span>{f.max.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:20}}>
+                <button onClick={()=>setStep(Math.max(0,step-1))} disabled={step===0} style={{padding:"8px 20px",borderRadius:6,border:"1px solid #ddd",background:"#fff",color:step===0?"#ccc":"#666",fontSize:12,cursor:step===0?"default":"pointer",fontFamily:"inherit"}}>Anterior</button>
+                {step<steps.length-1?(
+                  <button onClick={()=>setStep(step+1)} className="landBtn" style={{background:"#0078D4",color:"#fff",padding:"8px 20px",fontSize:12}}>Siguiente →</button>
+                ):(
+                  <button onClick={()=>setShowCalc(true)} className="landBtn" style={{background:"#0F7B0F",color:"#fff",padding:"8px 20px",fontSize:12}}>Ver mi ahorro →</button>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT: Results */}
+            <div style={{background:"#fff",borderRadius:12,padding:24,border:"1px solid #e5e7eb",boxShadow:"0 4px 20px rgba(0,0,0,.04)",display:"flex",flexDirection:"column"}}>
+              <div style={{fontSize:11,color:"#888",marginBottom:4}}>Estimacion en tiempo real</div>
+              <div style={{fontSize:14,fontWeight:700,marginBottom:16}}>Tu ahorro potencial con Seinon</div>
+
+              {/* Big number */}
+              <div style={{textAlign:"center",padding:20,borderRadius:10,background:"linear-gradient(135deg,#0F7B0F10,#4CAF5010)",border:"1px solid #0F7B0F20",marginBottom:16}}>
+                <div style={{fontSize:11,color:"#0F7B0F"}}>Ahorro anual estimado</div>
+                <div style={{fontSize:48,fontWeight:800,color:"#0F7B0F",letterSpacing:-2}}>{ahorroTotal.toLocaleString()} <span style={{fontSize:20}}>EUR</span></div>
+                <div style={{fontSize:13,color:"#666"}}>Eso es un <strong style={{color:"#0F7B0F"}}>{pctAhorro}%</strong> de tu factura actual de <strong>{Math.round(costeActual).toLocaleString()} EUR/año</strong></div>
+              </div>
+
+              {/* Breakdown */}
+              <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Desglose del ahorro</div>
+              {[
+                {l:"Monitorizacion + optimizacion",v:Math.round(ahorroMonitor),d:"Deteccion anomalias, cos phi, etc"},
+                {l:"Autoconsumo FV optimizado",v:Math.round(ahorroOrqFV),d:form.fv>0?`${form.fv}kWp al 62% autoconsumo`:"Sin FV instalada"},
+                {l:"Arbitraje bateria OMIE",v:Math.round(ahorroOrqBat),d:form.bat>0?`${form.bat}kWh x spread 0.14/kWh`:"Sin bateria"},
+                {l:"Demand shifting IA",v:Math.round(ahorroOrqShift),d:"Mover cargas a valle"},
+                {l:"Optimizar potencia contratada",v:Math.round(ahorroPotencia),d:`${form.potencia}kW contratados`},
+              ].map((r,i)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:i<4?"1px solid #f0f0f0":"none"}}>
+                  <div><div style={{fontSize:11,fontWeight:500}}>{r.l}</div><div style={{fontSize:9,color:"#999"}}>{r.d}</div></div>
+                  <span style={{fontSize:13,fontWeight:700,color:r.v>0?"#0F7B0F":"#ccc"}}>{r.v>0?`${r.v.toLocaleString()} EUR`:"-"}</span>
+                </div>
+              ))}
+
+              <div style={{marginTop:"auto",paddingTop:12,borderTop:"1px solid #e5e7eb",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div><div style={{fontSize:11,color:"#888"}}>ROI estimado</div><div style={{fontSize:16,fontWeight:700,color:"#0078D4"}}>{roi} meses</div></div>
+                <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{background:"#0078D4",color:"#fff",padding:"10px 24px",fontSize:13}}>Solicitar demo →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section id="how" style={{padding:"60px 24px",maxWidth:1100,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:40}}>
+          <h2 style={{fontSize:32,fontWeight:700,margin:"0 0 8px"}}>Como funciona</h2>
+          <p style={{fontSize:15,color:"#666"}}>De la instalacion al ahorro en 4 pasos</p>
+        </div>
+        <div className="stepGrid" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:16}}>
+          {[
+            {n:"1",t:"Instalamos el PLC",d:"Industrial Shields RPi PLC 21+ en tu cuadro electrico. Conexion Modbus a tus contadores e inversores. 2 horas.",ic:"🔧"},
+            {n:"2",t:"Conectamos Seinon",d:"El PLC envia datos en tiempo real a la nube. Configuramos zonas, puntos de medida y alarmas. 1 hora.",ic:"📡"},
+            {n:"3",t:"La IA aprende",d:"En 7 dias el algoritmo LSTM aprende tu patron de consumo, precios OMIE y produccion solar. Empieza a optimizar.",ic:"🧠"},
+            {n:"4",t:"Ahorras 24/7",d:"El orquestador decide cada hora la fuente optima. Tu recibes un briefing diario. Sin intervencion manual.",ic:"💰"},
+          ].map((s,i)=>(
+            <div key={i} style={{textAlign:"center",padding:20}}>
+              <div style={{width:56,height:56,borderRadius:"50%",background:"#0078D410",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,margin:"0 auto 12px"}}>{s.ic}</div>
+              <div style={{fontSize:11,color:"#0078D4",fontWeight:600,marginBottom:4}}>PASO {s.n}</div>
+              <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>{s.t}</div>
+              <div style={{fontSize:12,color:"#666",lineHeight:1.5}}>{s.d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{padding:"50px 24px",background:"linear-gradient(135deg,#0078D4,#60CDFF)",textAlign:"center"}}>
+        <h2 style={{fontSize:28,fontWeight:700,color:"#fff",margin:"0 0 10px"}}>Empieza a ahorrar hoy</h2>
+        <p style={{fontSize:15,color:"rgba(255,255,255,.8)",margin:"0 0 20px"}}>Sin compromiso. Conecta tu planta y ve resultados en la primera semana.</p>
+        <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{background:"#fff",color:"#0078D4",fontSize:15,padding:"14px 32px"}}>Acceder a Seinon →</button>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{padding:"30px 24px",background:"#111",color:"#888",fontSize:11,textAlign:"center"}}>
+        <div>Seinon — Orquestacion Energetica Inteligente</div>
+        <div style={{marginTop:4}}>Certex Innova S.L. — Industrial Shields RPi PLC 21+ — FlexMeasures</div>
+      </footer>
+
+      {/* LOGIN MODAL */}
+      {loginOpen&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setLoginOpen(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,padding:32,maxWidth:380,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,.2)",animation:"fadeUp .3s ease"}}>
+            <div style={{textAlign:"center",marginBottom:24}}>
+              <div style={{width:48,height:48,borderRadius:12,background:"linear-gradient(135deg,#0078D4,#60CDFF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,margin:"0 auto 12px"}}>⚡</div>
+              <div style={{fontSize:20,fontWeight:700}}>Acceder a Seinon</div>
+              <div style={{fontSize:12,color:"#888",marginTop:4}}>Entra a tu panel de monitorizacion y orquestacion</div>
+            </div>
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:600,marginBottom:4,color:"#444"}}>Email</div>
+              <input type="email" placeholder="jordi@certexinnova.com" style={{width:"100%",padding:"10px 12px",borderRadius:8,border:"1px solid #ddd",fontSize:13,fontFamily:"inherit",boxSizing:"border-box"}}/>
+            </div>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:11,fontWeight:600,marginBottom:4,color:"#444"}}>Contrasena</div>
+              <input type="password" placeholder="••••••••" style={{width:"100%",padding:"10px 12px",borderRadius:8,border:"1px solid #ddd",fontSize:13,fontFamily:"inherit",boxSizing:"border-box"}}/>
+            </div>
+            <button onClick={onLogin} className="landBtn" style={{background:"#0078D4",color:"#fff",width:"100%",justifyContent:"center",padding:"12px 0",fontSize:14}}>Entrar →</button>
+            <div style={{textAlign:"center",marginTop:12,fontSize:11,color:"#888"}}>Demo: cualquier email/password</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ========== SAAS DASHBOARD ==========
+function AppDash(p2){
   const[tab,setTab]=useState("dash");const[sim,setSim]=useState(true);const[tick,setTick]=useState(0);const[col,setCol]=useState(true);const[mob,setMob]=useState(false);
   useEffect(()=>{const c=()=>{const m=window.innerWidth<768;setMob(m);if(m)setCol(true)};c();window.addEventListener("resize",c);return()=>window.removeEventListener("resize",c)},[]);
   useEffect(()=>{if(!sim)return;const iv=setInterval(()=>setTick(t=>t+1),3000);return()=>clearInterval(iv)},[sim]);
@@ -95,6 +373,7 @@ export default function App(){
         {!mob&&<div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:tx2}}><Cpu size={11}/>RPi PLC 21+ <span style={{display:"flex",alignItems:"center",gap:3,marginLeft:8}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/><span style={{color:G}}>Online</span></span></div>}
         {mob&&<span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/></span>}
         <IB c={tx2} onClick={()=>setSim(!sim)}>{sim?<Pause size={13}/>:<Play size={13}/>}</IB>{!mob&&<IB c={tx2}><Bell size={13}/></IB>}<IB c={tx2}><Settings size={13}/></IB>
+        <button onClick={p2?.onLogout} style={{padding:"4px 10px",borderRadius:4,border:"1px solid #ddd",background:"#fff",color:"#666",fontSize:10,cursor:"pointer",fontFamily:"inherit",marginLeft:4}}>Salir</button>
       </header>
       <div style={{display:"flex",flex:1,overflow:"hidden"}}>
         <nav style={{width:col?(mob?0:48):165,flexShrink:0,background:"rgba(255,255,255,.95)",backdropFilter:"blur(20px)",borderRight:col&&mob?"none":`1px solid ${bd}`,padding:col&&mob?"0":"6px 3px",transition:"width .3s ease",display:"flex",flexDirection:"column",overflow:"hidden",...(mob&&!col?{position:"absolute",left:0,top:44,bottom:0,zIndex:40,width:200,boxShadow:"4px 0 20px rgba(0,0,0,.1)"}:{})}}>
