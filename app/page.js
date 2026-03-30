@@ -159,8 +159,7 @@ function Landing({onLogin}){
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:"rgba(255,255,255,.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid #e5e7eb",padding:"0 24px",height:56,display:"flex",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#0078D4,#60CDFF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>⚡</div>
-          <span style={{fontWeight:700,fontSize:18}}>Seinon</span>
+          <SeinonLogo size="sm"/>
         </div>
         <div style={{flex:1}}/>
         {!mob&&<div style={{display:"flex",gap:24,fontSize:13,color:"#666"}}>
@@ -419,8 +418,8 @@ function Landing({onLogin}){
 
       {/* FOOTER */}
       <footer style={{padding:"30px 24px",background:"#111",color:"#888",fontSize:11,textAlign:"center"}}>
-        <div>Seinon — Orquestacion Energetica Inteligente</div>
-        <div style={{marginTop:4}}>Certex Innova S.L. — Industrial Shields RPi PLC 21+ — FlexMeasures</div>
+        <div style={{marginBottom:6}}><SeinonLogo size="sm" dark={true}/></div>
+        <div>Certex Innova S.L. — Industrial Shields RPi PLC 21+ — FlexMeasures</div>
       </footer>
 
       {/* LOGIN MODAL */}
@@ -428,8 +427,7 @@ function Landing({onLogin}){
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setLoginOpen(false)}>
           <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,padding:32,maxWidth:380,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,.2)",animation:"fadeUp .3s ease"}}>
             <div style={{textAlign:"center",marginBottom:24}}>
-              <div style={{width:48,height:48,borderRadius:12,background:"linear-gradient(135deg,#0078D4,#60CDFF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,margin:"0 auto 12px"}}>⚡</div>
-              <div style={{fontSize:20,fontWeight:700}}>Acceder a Seinon</div>
+              <div style={{marginBottom:12}}><SeinonLogo size="md"/></div>
               <div style={{fontSize:12,color:"#888",marginTop:4}}>Entra a tu panel de monitorizacion y orquestacion</div>
             </div>
             <div style={{marginBottom:14}}>
@@ -467,7 +465,7 @@ function AppDash(p2){
 @media(max-width:768px){.g2,.g3,.g4,.g5,.g6,.gSide,.g3fr2fr,.gStrat{grid-template-columns:1fr}.g8{grid-template-columns:repeat(4,1fr)}.gDecs{grid-template-columns:repeat(3,1fr);gap:4px}}`}</style>
       <header style={{height:44,background:"rgba(255,255,255,.85)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",padding:"0 14px",borderBottom:`1px solid ${bd}`,gap:10,flexShrink:0,zIndex:50}}>
         <IB onClick={()=>setCol(!col)} c={tx2}><Menu size={15}/></IB>
-        <div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:26,height:26,borderRadius:6,background:`linear-gradient(135deg,${A},${AL})`,display:"flex",alignItems:"center",justifyContent:"center"}}><PlugZap size={13} color="#fff"/></div><span style={{fontWeight:700,fontSize:13.5}}>Seinon</span><span style={{fontSize:9,color:"#fff",background:G,padding:"1px 6px",borderRadius:8,fontWeight:600}}>LIVE</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:7}}><SeinonLogo size="sm"/><span style={{fontSize:9,color:"#fff",background:G,padding:"1px 6px",borderRadius:8,fontWeight:600}}>LIVE</span></div>
         <div style={{flex:1}}/>
         {!mob&&<div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:tx2}}><Cpu size={11}/>RPi PLC 21+ <span style={{display:"flex",alignItems:"center",gap:3,marginLeft:8}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/><span style={{color:G}}>Online</span></span></div>}
         {mob&&<span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:5,height:5,borderRadius:"50%",background:G,animation:"pulse 2s infinite"}}/></span>}
@@ -493,6 +491,20 @@ function Bg({text,color}){return <span style={{padding:"2px 7px",borderRadius:9,
 function TT(p){return{contentStyle:{background:"#fff",border:`1px solid ${p.bd}`,borderRadius:7,fontSize:10,boxShadow:p.sh}}}
 function Hd({t,sub,children}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:8}}><div><h1 style={{fontSize:18,fontWeight:700,margin:0}}>{t}</h1>{sub&&<p style={{fontSize:11,color:"#666",margin:"2px 0 0"}}>{sub}</p>}</div>{children}</div>}
 function Mi({ic:Ic,l,v,u,color,sub,p}){return(<Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:10}}><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}><div style={{width:24,height:24,borderRadius:5,background:`${color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic size={12} color={color}/></div><span style={{fontSize:9,color:p.tx2}}>{l}</span></div><div style={{fontSize:17,fontWeight:700,letterSpacing:-.5}}>{v}{u&&<span style={{fontSize:10,fontWeight:400,color:p.tx2}}> {u}</span>}</div>{sub&&<Bg text={sub} color={color}/>}</Cd>)}
+function SeinonLogo({size="md",dark=false}){
+  const s=size==="sm"?{fs:18,pw:140,ph:12,sw:1.2,sub:false}:size==="lg"?{fs:54,pw:400,ph:30,sw:2.2,sub:true}:size==="xl"?{fs:58,pw:420,ph:32,sw:2.2,sub:true}:{fs:28,pw:220,ph:16,sw:1.5,sub:false};
+  const tc=dark?"#fff":"var(--color-text-primary,#111)";
+  return(
+    <div style={{display:"inline-flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",fontSize:s.fs,fontWeight:800,letterSpacing:s.fs>30?-2.5:-1.5,lineHeight:1,color:tc}}>se<span style={{color:"#0078D4"}}>i</span>non</div>
+      <svg width={s.pw} height={s.ph} viewBox={`0 0 ${s.pw} ${s.ph}`} fill="none" style={{marginTop:s.fs>30?4:2}}>
+        <defs><linearGradient id={`slg-${size}`} x1="0" y1="0" x2={s.pw} y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#0078D4"/><stop offset="50%" stopColor="#00B4D8"/><stop offset="100%" stopColor="#0F7B0F"/></linearGradient></defs>
+        <polyline points={Array.from({length:Math.round(s.pw/4)+1},(_,i)=>{const x=i*4,mid=s.pw/2,h=s.ph/2,amp=h*.8,spread=s.pw*.08;const d=Math.abs(x-mid);const env=d<spread?Math.cos(d/spread*Math.PI/2):0;const wave=Math.sin((x-mid)/spread*Math.PI*2)*env;return`${x},${h-wave*amp}`}).join(" ")} stroke={`url(#slg-${size})`} strokeWidth={s.sw} strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      {s.sub&&<div style={{fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",fontSize:10,letterSpacing:6,color:dark?"rgba(255,255,255,.6)":"var(--color-text-tertiary,#999)",fontWeight:500,marginTop:4}}>INTELLIGENT ENERGY</div>}
+    </div>
+  );
+}
 
 // ========== 1. DASHBOARD ==========
 function Pg1(p){
@@ -879,14 +891,30 @@ function PgReport(p){
     const tTotal=(cols,widths,clr)=>{chk(10);fl(M,y,RW,9,clr[0],clr[1],clr[2]);let x=M;cols.forEach((t,i)=>{c(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text(String(t),x+3,y+6);x+=widths[i]});y+=12};
 
     // HEADER
-    fl(0,0,W,32,0,100,190);fl(0,32,W,2,0,78,156);
+    fl(0,0,W,36,0,100,190);fl(0,36,W,2,0,78,156);
     c(255,255,255);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("REPORTE DIARIO",M,8);
-    doc.setFontSize(20);doc.setFont("helvetica","bold");doc.text("Seinon IA — Briefing Matinal",M,18);
-    doc.setFontSize(9);doc.setFont("helvetica","normal");doc.text(fecha,M,25);
-    fl(W-75,6,65,22,255,255,255);brd(W-75,6,65,22,0,80,170);
+    // Logo wordmark
+    doc.setFontSize(24);doc.setFont("helvetica","bold");
+    c(255,255,255);doc.text("se",M,22);
+    const seW=doc.getTextWidth("se");
+    c(100,200,255);doc.text("i",M+seW,22);
+    const iW=doc.getTextWidth("i");
+    c(255,255,255);doc.text("non",M+seW+iW,22);
+    // Pulse line under logo
+    const pw=doc.getTextWidth("seinon"),px=M,py=26;
+    doc.setDrawColor(100,200,255);doc.setLineWidth(.6);
+    doc.line(px,py,px+pw*.35,py);
+    const cx=px+pw*.43;
+    doc.line(px+pw*.35,py,cx-4,py-3);doc.line(cx-4,py-3,cx-1,py+3);doc.line(cx-1,py+3,cx+1,py-3);doc.line(cx+1,py-3,cx+4,py+3);doc.line(cx+4,py+3,px+pw*.57,py);
+    doc.setDrawColor(15,123,15);doc.line(px+pw*.57,py,px+pw,py);
+    // Subtitle
+    c(200,210,220);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("INTELLIGENT ENERGY",M,31);
+    fl(W-75,6,65,26,255,255,255);brd(W-75,6,65,26,0,80,170);
     c(0,100,190);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("AHORRO PREVISTO HOY",W-72,12);
-    doc.setFontSize(18);doc.setFont("helvetica","bold");c(15,123,15);doc.text("29.40 EUR",W-72,22);
-    y=40;
+    doc.setFontSize(18);doc.setFont("helvetica","bold");c(15,123,15);doc.text("29.40 EUR",W-72,24);
+    // Date right side
+    c(200,210,220);doc.setFontSize(8);doc.setFont("helvetica","normal");doc.text(fecha,W-75-2,34,{align:"right"});
+    y=44;
     fl(M,y,RW,10,245,247,250);brd(M,y,RW,10,220,225,230);
     c(80,85,90);doc.setFontSize(7.5);doc.setFont("helvetica","normal");
     doc.text("Cliente: Certex Innova S.L.",M+3,y+4);doc.text("Instalacion: Planta 4",M+60,y+4);doc.text("Potencia: 200 kW",M+110,y+4);
