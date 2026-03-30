@@ -232,148 +232,157 @@ function Landing({onLogin}){
 
       {/* CALCULATOR */}
       <section id="calculator" style={{padding:"60px 24px",background:"#f8faff"}}>
-        <div style={{maxWidth:1100,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:40}}>
+        <div style={{maxWidth:700,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:30}}>
             <h2 style={{fontSize:32,fontWeight:700,margin:"0 0 8px"}}>Calcula tu ahorro en 60 segundos</h2>
-            <p style={{fontSize:15,color:"#666"}}>Sube tu factura de la luz y la IA analiza tu consumo al instante. O configura los datos manualmente.</p>
+            <p style={{fontSize:15,color:"#666"}}>Sube tu factura o introduce tus datos. Al final te mostramos cuanto puedes ahorrar.</p>
           </div>
 
-          <div className="calcGrid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
-            {/* LEFT: Questionnaire */}
-            <div style={{background:"#fff",borderRadius:12,padding:24,border:"1px solid #e5e7eb",boxShadow:"0 4px 20px rgba(0,0,0,.04)"}}>
-              {/* PDF Upload */}
-              <div style={{marginBottom:20,padding:16,borderRadius:10,border:"2px dashed #0078D440",background:pdfData?"#0F7B0F06":pdfLoading?"#0078D406":"#f8faff",transition:"all .3s",position:"relative"}}>
-                {pdfLoading?(
-                  <div style={{textAlign:"center",padding:10}}>
-                    <div style={{width:36,height:36,borderRadius:"50%",border:"3px solid #0078D430",borderTopColor:"#0078D4",animation:"spin 1s linear infinite",margin:"0 auto 10px"}}/>
-                    <div style={{fontSize:13,fontWeight:600,color:"#0078D4"}}>Analizando factura con IA...</div>
-                    <div style={{fontSize:10,color:"#888",marginTop:4}}>Extrayendo consumo, potencia, tarifa, periodos...</div>
-                  </div>
-                ):pdfData?(
-                  <div>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                      <div style={{width:28,height:28,borderRadius:7,background:"#0F7B0F15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>✅</div>
-                      <div><div style={{fontSize:12,fontWeight:700,color:"#0F7B0F"}}>Factura analizada correctamente</div><div style={{fontSize:10,color:"#888"}}>{pdfName}</div></div>
-                      <button onClick={()=>{setPdfData(null);setPdfName(null);setStep(0)}} style={{marginLeft:"auto",fontSize:10,color:"#888",background:"none",border:"1px solid #ddd",borderRadius:4,padding:"3px 8px",cursor:"pointer",fontFamily:"inherit"}}>Cambiar</button>
-                    </div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
-                      {[
-                        ["Comercializadora",pdfData.comercializadora||"-"],
-                        ["Periodo",pdfData.periodo||"-"],
-                        ["Tarifa",pdfData.tipo_tarifa||pdfData.tarifa||"-"],
-                        ["CUPS",pdfData.cups?pdfData.cups.slice(0,10)+"...":"-"],
-                      ].map(([l,v])=>(
-                        <div key={l} style={{padding:6,borderRadius:5,background:"#f8f9fa",border:"1px solid #e5e7eb"}}>
-                          <div style={{fontSize:8,color:"#888"}}>{l}</div>
-                          <div style={{fontSize:11,fontWeight:600}}>{v}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
-                      {[
-                        ["Consumo",`${(pdfData.consumo_mensual_kwh||0).toLocaleString()} kWh`,"#0078D4"],
-                        ["Potencia",`${pdfData.potencia_contratada_kw||0} kW`,"#F7630C"],
-                        ["Importe",`${(pdfData.coste_total_eur||0).toFixed(2)} EUR`,"#C42B1C"],
-                      ].map(([l,v,c])=>(
-                        <div key={l} style={{padding:8,borderRadius:5,background:`${c}08`,border:`1px solid ${c}15`,textAlign:"center"}}>
-                          <div style={{fontSize:8,color:"#888"}}>{l}</div>
-                          <div style={{fontSize:15,fontWeight:700,color:c}}>{v}</div>
-                        </div>
-                      ))}
-                    </div>
-                    {pdfData.resumen&&<div style={{fontSize:10,color:"#555",lineHeight:1.4,padding:8,borderRadius:5,background:"#f8f9fa"}}><strong>Resumen IA:</strong> {pdfData.resumen}</div>}
-                    {pdfData.penalizacion_reactiva>0&&<div style={{fontSize:10,color:"#C42B1C",marginTop:6,padding:6,borderRadius:4,background:"#C42B1C08"}}>⚠️ Penalizacion reactiva detectada: {pdfData.penalizacion_reactiva} EUR — Seinon optimiza el cos phi automaticamente</div>}
-                    <div style={{marginTop:8,padding:8,borderRadius:6,background:"#0078D408",border:"1px solid #0078D415",fontSize:10,color:"#0078D4",fontWeight:600,textAlign:"center"}}>✓ Datos extraidos automaticamente. Ajusta los sliders abajo si necesitas corregir algo.</div>
-                  </div>
-                ):(
-                  <label style={{display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",padding:8}}>
-                    <input type="file" accept=".pdf" onChange={e=>{const f=e.target.files?.[0];if(f)analyzePDF(f)}} style={{display:"none"}}/>
-                    <div style={{width:40,height:40,borderRadius:10,background:"#0078D412",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:8}}>📄</div>
-                    <div style={{fontSize:13,fontWeight:700,color:"#0078D4",marginBottom:3}}>Sube tu factura de la luz</div>
-                    <div style={{fontSize:11,color:"#888",textAlign:"center"}}>Arrastra un PDF o haz click aqui. La IA extrae automaticamente consumo, potencia, tarifa y calcula tu ahorro.</div>
-                    <div style={{marginTop:8,padding:"6px 16px",borderRadius:6,background:"#0078D4",color:"#fff",fontSize:11,fontWeight:600}}>Seleccionar PDF</div>
-                  </label>
-                )}
-                {pdfError&&<div style={{marginTop:8,padding:8,borderRadius:6,background:"#C42B1C08",border:"1px solid #C42B1C15",fontSize:10,color:"#C42B1C"}}>{pdfError}</div>}
-              </div>
+          <div style={{background:"#fff",borderRadius:16,padding:mob?20:32,border:"1px solid #e5e7eb",boxShadow:"0 4px 30px rgba(0,0,0,.06)",animation:"fadeUp .5s ease"}}>
 
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-                <div style={{flex:1,height:1,background:"#e5e7eb"}}/><span style={{fontSize:10,color:"#aaa",flexShrink:0}}>o configura manualmente</span><div style={{flex:1,height:1,background:"#e5e7eb"}}/>
-              </div>
-
-              {/* Progress */}
-              <div style={{display:"flex",gap:4,marginBottom:20}}>
-                {steps.map((_,i)=>(<div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=step?"#0078D4":"#e5e7eb",transition:"all .3s"}}/>))}
-              </div>
-              <div style={{fontSize:11,color:"#888",marginBottom:4}}>Paso {step+1} de {steps.length}</div>
-              <div style={{fontSize:18,fontWeight:700,marginBottom:16}}>{steps[step].t}</div>
-
-              {steps[step].fields.map(f=>(
-                <div key={f.k} style={{marginBottom:18}}>
-                  <div style={{fontSize:12,fontWeight:600,marginBottom:6,color:"#444"}}>{f.l}</div>
-                  {f.opts?(
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      {f.opts.map(o=>{const sel=form[f.k]===o;return(
-                        <button key={String(o)} onClick={()=>setForm({...form,[f.k]:o})} style={{padding:"8px 16px",borderRadius:6,border:sel?"2px solid #0078D4":"1px solid #ddd",background:sel?"#0078D410":"#fff",color:sel?"#0078D4":"#666",fontSize:12,fontWeight:sel?600:400,cursor:"pointer",fontFamily:"inherit",transition:"all .2s"}}>
-                          {o===true?"Si":o===false?"No":typeof o==="number"?`${o} turno${o>1?"s":""}`:o.charAt(0).toUpperCase()+o.slice(1)}
-                        </button>
-                      )})}
+            {step<=3?(
+              <>
+                {/* PDF Upload */}
+                <div style={{marginBottom:20,padding:16,borderRadius:10,border:"2px dashed #0078D440",background:pdfData?"#0F7B0F06":pdfLoading?"#0078D406":"#f8faff",transition:"all .3s"}}>
+                  {pdfLoading?(
+                    <div style={{textAlign:"center",padding:10}}>
+                      <div style={{width:36,height:36,borderRadius:"50%",border:"3px solid #0078D430",borderTopColor:"#0078D4",animation:"spin 1s linear infinite",margin:"0 auto 10px"}}/>
+                      <div style={{fontSize:13,fontWeight:600,color:"#0078D4"}}>Analizando factura con IA...</div>
+                      <div style={{fontSize:10,color:"#888",marginTop:4}}>Extrayendo consumo, potencia, tarifa, periodos...</div>
+                    </div>
+                  ):pdfData?(
+                    <div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                        <div style={{width:28,height:28,borderRadius:7,background:"#0F7B0F15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>✅</div>
+                        <div><div style={{fontSize:12,fontWeight:700,color:"#0F7B0F"}}>Factura analizada correctamente</div><div style={{fontSize:10,color:"#888"}}>{pdfName}</div></div>
+                        <button onClick={()=>{setPdfData(null);setPdfName(null);setStep(0)}} style={{marginLeft:"auto",fontSize:10,color:"#888",background:"none",border:"1px solid #ddd",borderRadius:4,padding:"3px 8px",cursor:"pointer",fontFamily:"inherit"}}>Cambiar</button>
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:6}}>
+                        {[["Consumo",`${(pdfData.consumo_mensual_kwh||0).toLocaleString()} kWh`,"#0078D4"],["Potencia",`${pdfData.potencia_contratada_kw||0} kW`,"#F7630C"],["Importe",`${(pdfData.coste_total_eur||0).toFixed(2)} EUR`,"#C42B1C"]].map(([l,v,c])=>(
+                          <div key={l} style={{padding:8,borderRadius:5,background:`${c}08`,border:`1px solid ${c}15`,textAlign:"center"}}>
+                            <div style={{fontSize:8,color:"#888"}}>{l}</div><div style={{fontSize:14,fontWeight:700,color:c}}>{v}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {pdfData.resumen&&<div style={{fontSize:10,color:"#555",lineHeight:1.4,padding:6,borderRadius:4,background:"#f8f9fa"}}><strong>IA:</strong> {pdfData.resumen}</div>}
+                      <div style={{marginTop:6,padding:6,borderRadius:4,background:"#0078D408",fontSize:10,color:"#0078D4",fontWeight:600,textAlign:"center"}}>✓ Datos extraidos. Ajusta abajo si necesitas.</div>
                     </div>
                   ):(
-                    <div>
-                      <input type="range" min={f.min} max={f.max} step={f.step} value={form[f.k]} onChange={e=>setForm({...form,[f.k]:+e.target.value})} style={{width:"100%",accentColor:"#0078D4",height:6}}/>
-                      <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#888",marginTop:2}}>
-                        <span>{f.min.toLocaleString()}</span>
-                        <span style={{fontSize:16,fontWeight:700,color:"#0078D4"}}>{form[f.k].toLocaleString()}{f.k==="consumo"?" kWh/mes":f.k==="potencia"?" kW":f.k==="fv"?" kWp":" kWh"}</span>
-                        <span>{f.max.toLocaleString()}</span>
+                    <label style={{display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",padding:8}}>
+                      <input type="file" accept=".pdf" onChange={e=>{const f=e.target.files?.[0];if(f)analyzePDF(f)}} style={{display:"none"}}/>
+                      <div style={{width:40,height:40,borderRadius:10,background:"#0078D412",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:8}}>📄</div>
+                      <div style={{fontSize:13,fontWeight:700,color:"#0078D4",marginBottom:3}}>Sube tu factura de la luz</div>
+                      <div style={{fontSize:11,color:"#888",textAlign:"center"}}>La IA extrae automaticamente consumo, potencia y tarifa</div>
+                      <div style={{marginTop:8,padding:"6px 16px",borderRadius:6,background:"#0078D4",color:"#fff",fontSize:11,fontWeight:600}}>Seleccionar PDF</div>
+                    </label>
+                  )}
+                  {pdfError&&<div style={{marginTop:6,padding:6,borderRadius:4,background:"#C42B1C08",fontSize:10,color:"#C42B1C"}}>{pdfError}</div>}
+                </div>
+
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
+                  <div style={{flex:1,height:1,background:"#e5e7eb"}}/><span style={{fontSize:10,color:"#aaa",flexShrink:0}}>o configura manualmente</span><div style={{flex:1,height:1,background:"#e5e7eb"}}/>
+                </div>
+
+                {/* Progress */}
+                <div style={{display:"flex",gap:4,marginBottom:20}}>
+                  {steps.map((_,i)=>(<div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=step?"#0078D4":"#e5e7eb",transition:"all .3s"}}/>))}
+                </div>
+                <div style={{fontSize:11,color:"#888",marginBottom:4}}>Paso {step+1} de {steps.length}</div>
+                <div style={{fontSize:20,fontWeight:700,marginBottom:20}}>{steps[step].t}</div>
+
+                {steps[step].fields.map(f=>(
+                  <div key={f.k} style={{marginBottom:20}}>
+                    <div style={{fontSize:13,fontWeight:600,marginBottom:8,color:"#444"}}>{f.l}</div>
+                    {f.opts?(
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        {f.opts.map(o=>{const sel=form[f.k]===o;return(
+                          <button key={String(o)} onClick={()=>setForm({...form,[f.k]:o})} style={{padding:"10px 20px",borderRadius:8,border:sel?"2px solid #0078D4":"1px solid #ddd",background:sel?"#0078D410":"#fff",color:sel?"#0078D4":"#666",fontSize:13,fontWeight:sel?600:400,cursor:"pointer",fontFamily:"inherit",transition:"all .2s"}}>
+                            {o===true?"Si":o===false?"No":typeof o==="number"?`${o} turno${o>1?"s":""}`:o.charAt(0).toUpperCase()+o.slice(1)}
+                          </button>
+                        )})}
                       </div>
-                    </div>
+                    ):(
+                      <div>
+                        <input type="range" min={f.min} max={f.max} step={f.step} value={form[f.k]} onChange={e=>setForm({...form,[f.k]:+e.target.value})} style={{width:"100%",accentColor:"#0078D4",height:6}}/>
+                        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#888",marginTop:4}}>
+                          <span>{f.min.toLocaleString()}</span>
+                          <span style={{fontSize:18,fontWeight:700,color:"#0078D4"}}>{form[f.k].toLocaleString()}{f.k==="consumo"?" kWh/mes":f.k==="potencia"?" kW":f.k==="fv"?" kWp":" kWh"}</span>
+                          <span>{f.max.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:24}}>
+                  <button onClick={()=>setStep(Math.max(0,step-1))} disabled={step===0} style={{padding:"10px 24px",borderRadius:8,border:"1px solid #ddd",background:"#fff",color:step===0?"#ccc":"#666",fontSize:13,cursor:step===0?"default":"pointer",fontFamily:"inherit"}}>Anterior</button>
+                  {step<steps.length-1?(
+                    <button onClick={()=>setStep(step+1)} className="landBtn" style={{background:"#0078D4",color:"#fff",padding:"10px 24px",fontSize:13}}>Siguiente →</button>
+                  ):(
+                    <button onClick={()=>setStep(4)} className="landBtn" style={{background:"#0F7B0F",color:"#fff",padding:"10px 24px",fontSize:13}}>Ver mi ahorro →</button>
                   )}
                 </div>
-              ))}
-
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:20}}>
-                <button onClick={()=>setStep(Math.max(0,step-1))} disabled={step===0} style={{padding:"8px 20px",borderRadius:6,border:"1px solid #ddd",background:"#fff",color:step===0?"#ccc":"#666",fontSize:12,cursor:step===0?"default":"pointer",fontFamily:"inherit"}}>Anterior</button>
-                {step<steps.length-1?(
-                  <button onClick={()=>setStep(step+1)} className="landBtn" style={{background:"#0078D4",color:"#fff",padding:"8px 20px",fontSize:12}}>Siguiente →</button>
-                ):(
-                  <button onClick={()=>setShowCalc(true)} className="landBtn" style={{background:"#0F7B0F",color:"#fff",padding:"8px 20px",fontSize:12}}>Ver mi ahorro →</button>
-                )}
-              </div>
-            </div>
-
-            {/* RIGHT: Results */}
-            <div style={{background:"#fff",borderRadius:12,padding:24,border:"1px solid #e5e7eb",boxShadow:"0 4px 20px rgba(0,0,0,.04)",display:"flex",flexDirection:"column"}}>
-              <div style={{fontSize:11,color:"#888",marginBottom:4}}>Estimacion en tiempo real</div>
-              <div style={{fontSize:14,fontWeight:700,marginBottom:16}}>Tu ahorro potencial con Seinon</div>
-
-              {/* Big number */}
-              <div style={{textAlign:"center",padding:20,borderRadius:10,background:"linear-gradient(135deg,#0F7B0F10,#4CAF5010)",border:"1px solid #0F7B0F20",marginBottom:16}}>
-                <div style={{fontSize:11,color:"#0F7B0F"}}>Ahorro anual estimado</div>
-                <div style={{fontSize:48,fontWeight:800,color:"#0F7B0F",letterSpacing:-2}}>{ahorroTotal.toLocaleString()} <span style={{fontSize:20}}>EUR</span></div>
-                <div style={{fontSize:13,color:"#666"}}>Eso es un <strong style={{color:"#0F7B0F"}}>{pctAhorro}%</strong> de tu factura actual de <strong>{Math.round(costeActual).toLocaleString()} EUR/año</strong></div>
-              </div>
-
-              {/* Breakdown */}
-              <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Desglose del ahorro</div>
-              {[
-                {l:"Monitorizacion + optimizacion",v:Math.round(ahorroMonitor),d:"Deteccion anomalias, cos phi, etc"},
-                {l:"Autoconsumo FV optimizado",v:Math.round(ahorroOrqFV),d:form.fv>0?`${form.fv}kWp al 62% autoconsumo`:"Sin FV instalada"},
-                {l:"Arbitraje bateria OMIE",v:Math.round(ahorroOrqBat),d:form.bat>0?`${form.bat}kWh x spread 0.14/kWh`:"Sin bateria"},
-                {l:"Demand shifting IA",v:Math.round(ahorroOrqShift),d:"Mover cargas a valle"},
-                {l:"Optimizar potencia contratada",v:Math.round(ahorroPotencia),d:`${form.potencia}kW contratados`},
-              ].map((r,i)=>(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:i<4?"1px solid #f0f0f0":"none"}}>
-                  <div><div style={{fontSize:11,fontWeight:500}}>{r.l}</div><div style={{fontSize:9,color:"#999"}}>{r.d}</div></div>
-                  <span style={{fontSize:13,fontWeight:700,color:r.v>0?"#0F7B0F":"#ccc"}}>{r.v>0?`${r.v.toLocaleString()} EUR`:"-"}</span>
+              </>
+            ):(
+              /* ===== RESULTS SCREEN (step 4) ===== */
+              <div style={{animation:"fadeUp .5s ease"}}>
+                <div style={{textAlign:"center",marginBottom:24}}>
+                  <div style={{fontSize:40,marginBottom:8}}>🎉</div>
+                  <div style={{fontSize:24,fontWeight:800,marginBottom:4}}>Tu ahorro potencial con Seinon</div>
+                  <div style={{fontSize:13,color:"#888"}}>Basado en {pdfData?`tu factura de ${pdfData.comercializadora||"electricidad"}`:"los datos que has proporcionado"}</div>
                 </div>
-              ))}
 
-              <div style={{marginTop:"auto",paddingTop:12,borderTop:"1px solid #e5e7eb",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div><div style={{fontSize:11,color:"#888"}}>ROI estimado</div><div style={{fontSize:16,fontWeight:700,color:"#0078D4"}}>{roi} meses</div></div>
-                <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{background:"#0078D4",color:"#fff",padding:"10px 24px",fontSize:13}}>Solicitar demo →</button>
+                {/* Big number */}
+                <div style={{textAlign:"center",padding:24,borderRadius:14,background:"linear-gradient(135deg,#0F7B0F08,#4CAF5012)",border:"2px solid #0F7B0F20",marginBottom:20}}>
+                  <div style={{fontSize:12,color:"#0F7B0F",fontWeight:600}}>Ahorro anual estimado</div>
+                  <div style={{fontSize:56,fontWeight:800,color:"#0F7B0F",letterSpacing:-3,lineHeight:1}}>{ahorroTotal.toLocaleString()} <span style={{fontSize:24}}>EUR</span></div>
+                  <div style={{fontSize:14,color:"#555",marginTop:8}}>Eso es un <strong style={{color:"#0F7B0F",fontSize:18}}>{pctAhorro}%</strong> de tu factura actual de <strong>{Math.round(costeActual).toLocaleString()} EUR/ano</strong></div>
+                  <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:14}}>
+                    <div style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1px solid #e5e7eb"}}><div style={{fontSize:10,color:"#888"}}>ROI estimado</div><div style={{fontSize:20,fontWeight:700,color:"#0078D4"}}>{roi} meses</div></div>
+                    <div style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1px solid #e5e7eb"}}><div style={{fontSize:10,color:"#888"}}>Ahorro mensual</div><div style={{fontSize:20,fontWeight:700,color:"#0F7B0F"}}>{Math.round(ahorroTotal/12).toLocaleString()} EUR</div></div>
+                    <div style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1px solid #e5e7eb"}}><div style={{fontSize:10,color:"#888"}}>Ahorro diario</div><div style={{fontSize:20,fontWeight:700,color:"#F7630C"}}>{(ahorroTotal/365).toFixed(1)} EUR</div></div>
+                  </div>
+                </div>
+
+                {/* Breakdown */}
+                <div style={{marginBottom:20}}>
+                  <div style={{fontSize:14,fontWeight:700,marginBottom:10}}>Desglose del ahorro</div>
+                  {[
+                    {l:"Monitorizacion + deteccion anomalias",v:Math.round(ahorroMonitor),d:"Optimizacion cos phi, consumo standby, eficiencia",c:"#0078D4",pct:Math.round(ahorroMonitor/ahorroTotal*100)},
+                    {l:"Autoconsumo FV optimizado",v:Math.round(ahorroOrqFV),d:form.fv>0?`${form.fv}kWp al 62% autoconsumo con orquestacion`:"Sin FV instalada — con FV ahorrarias mas",c:"#F7630C",pct:Math.round(ahorroOrqFV/ahorroTotal*100)},
+                    {l:"Arbitraje bateria (comprar valle, usar punta)",v:Math.round(ahorroOrqBat),d:form.bat>0?`${form.bat}kWh x spread 0.14 EUR/kWh x 365 dias`:"Sin bateria — el arbitraje aporta gran ahorro",c:"#B4A0FF",pct:Math.round(ahorroOrqBat/ahorroTotal*100)},
+                    {l:"Demand shifting IA (mover cargas a valle)",v:Math.round(ahorroOrqShift),d:"El algoritmo mueve automaticamente el 5% de carga a horas baratas",c:"#0F7B0F",pct:Math.round(ahorroOrqShift/ahorroTotal*100)},
+                    {l:"Optimizar potencia contratada",v:Math.round(ahorroPotencia),d:`Potencia actual: ${form.potencia}kW — posible reduccion del 15%`,c:"#C42B1C",pct:Math.round(ahorroPotencia/ahorroTotal*100)},
+                  ].map((r,i)=>(
+                    <div key={i} style={{padding:"10px 0",borderBottom:i<4?"1px solid #f0f0f0":"none"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                        <span style={{fontSize:12,fontWeight:600}}>{r.l}</span>
+                        <span style={{fontSize:15,fontWeight:700,color:r.v>0?r.c:"#ccc"}}>{r.v>0?`${r.v.toLocaleString()} EUR`:"-"}</span>
+                      </div>
+                      <div style={{fontSize:10,color:"#999",marginBottom:4}}>{r.d}</div>
+                      {r.v>0&&<div style={{height:6,borderRadius:3,background:"#f0f0f0",overflow:"hidden"}}><div style={{height:"100%",borderRadius:3,background:r.c,width:`${Math.max(5,r.pct)}%`,transition:"width 1s ease"}}/></div>}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Datos usados */}
+                <div style={{padding:14,borderRadius:8,background:"#f8f9fa",border:"1px solid #e5e7eb",marginBottom:20}}>
+                  <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Datos utilizados para el calculo</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                    {[["Consumo mensual",`${form.consumo.toLocaleString()} kWh`],["Potencia contratada",`${form.potencia} kW`],["Tarifa",form.tarifa],["Tipo",form.tipo],["FV instalada",form.fv>0?`${form.fv} kWp`:"No"],["Bateria",form.bat>0?`${form.bat} kWh`:"No"]].map(([l,v])=>(
+                      <div key={l}><div style={{fontSize:9,color:"#888"}}>{l}</div><div style={{fontSize:12,fontWeight:600}}>{v}</div></div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTAs */}
+                <div style={{display:"flex",gap:10,marginBottom:12}}>
+                  <button onClick={()=>setLoginOpen(true)} className="landBtn" style={{flex:1,background:"#0078D4",color:"#fff",justifyContent:"center",padding:"14px 0",fontSize:15}}>Solicitar demo personalizada →</button>
+                  <button onClick={()=>setStep(0)} className="landBtn" style={{background:"#fff",color:"#666",border:"1px solid #ddd",padding:"14px 20px",fontSize:13}}>Recalcular</button>
+                </div>
+                <div style={{textAlign:"center",fontSize:10,color:"#aaa"}}>Sin compromiso. Te mostramos el dashboard real con datos de tu planta.</div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -719,6 +728,122 @@ function Pg3(p){
       </div>
       <div style={{marginTop:6,padding:6,borderRadius:5,background:`${G}06`,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:11,color:G,fontWeight:600}}>Total ahorro IA hoy</span><span style={{fontSize:18,fontWeight:700,color:G}}>29.40</span></div>
     </Cd>
+
+    {/* GESTION DE EXCEDENTES */}
+    <div style={{marginTop:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <div style={{width:30,height:30,borderRadius:8,background:`${G}12`,display:"flex",alignItems:"center",justifyContent:"center"}}><TrendingUp size={16} color={G}/></div>
+        <div><div style={{fontSize:15,fontWeight:700}}>Gestion de Excedentes</div><div style={{fontSize:10,color:p.tx2}}>Venta a red, compensacion y optimizacion de vertido</div></div>
+        <div style={{marginLeft:"auto",display:"flex",gap:4}}><Bg text="RD 244/2019" color={A}/><Bg text="Compensacion simplificada" color={G}/></div>
+      </div>
+
+      {/* KPIs excedentes */}
+      <div className="g6" style={{marginBottom:8}}>
+        <Mi ic={TrendingUp} l="Excedentes hoy" v="142" u="kWh" color={G} p={p}/>
+        <Mi ic={CircleDollarSign} l="Valor vertido" v="8.52" color={G} sub="0.06/kWh" p={p}/>
+        <Mi ic={SunMedium} l="Autoconsumo" v="62%" color={W} p={p}/>
+        <Mi ic={Zap} l="Vertido evitable" v="38" u="kWh" color={D} sub="a bateria" p={p}/>
+        <Mi ic={CircleDollarSign} l="Ingresos mes" v="186" color={G} sub="excedentes" p={p}/>
+        <Mi ic={TrendingUp} l="Ingresos anual" v="2,232" color={A} sub="proyectado" p={p}/>
+      </div>
+
+      <div className="g2" style={{marginBottom:8}}>
+        {/* Weekly surplus pattern */}
+        <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:12,fontWeight:600}}>Excedentes por Dia de Semana</span><Bg text="Fin de semana = oportunidad" color={W}/></div>
+          <ResponsiveContainer width="100%" height={130}><BarChart data={[
+            {d:"Lun",exc:18,auto:82,precio:.061},{d:"Mar",exc:15,auto:85,precio:.058},{d:"Mie",exc:20,auto:80,precio:.063},
+            {d:"Jue",exc:16,auto:84,precio:.059},{d:"Vie",exc:22,auto:78,precio:.067},
+            {d:"Sab",exc:48,auto:52,precio:.072},{d:"Dom",exc:55,auto:45,precio:.074}
+          ]}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="d" tick={{fill:p.tx2,fontSize:9}} axisLine={false} tickLine={false}/><YAxis tick={{fill:p.tx2,fontSize:8}} axisLine={false} tickLine={false} unit="%"/><Tooltip {...TT(p)}/><Bar dataKey="auto" stackId="1" fill={G} radius={[0,0,0,0]} name="Autoconsumo %"/><Bar dataKey="exc" stackId="1" fill={W} radius={[3,3,0,0]} name="Excedente %"/></BarChart></ResponsiveContainer>
+          <div style={{padding:8,borderRadius:5,background:`${W}06`,border:`1px solid ${W}12`,fontSize:10,marginTop:6}}>
+            <strong style={{color:W}}>Insight IA:</strong> Los fines de semana el excedente sube al 48-55% porque la planta consume un 40% menos. El orquestador prioriza: 1) cargar bateria al 100%, 2) verter a red en horas de mayor precio OMIE, 3) precarga para el lunes.
+          </div>
+        </Cd>
+
+        {/* Hourly strategy */}
+        <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:12,fontWeight:600}}>Estrategia de Vertido Optimo (Sabado)</span><Bg text="IA optimiza hora" color={A}/></div>
+          <ResponsiveContainer width="100%" height={130}><ComposedChart data={Array.from({length:24},(_,h)=>{
+            const pv=h>=7&&h<=20?Math.max(0,Math.sin((h-7)/13*Math.PI)*92):0;
+            const con=h<6?12:h<9?18:h<17?25:h<20?20:15;
+            const exc=Math.max(0,pv-con);
+            const precio=omie[h]?.precio||.05;
+            return{h:`${String(h).padStart(2,"0")}`,pv:+pv.toFixed(0),con,exc:+exc.toFixed(0),precio:+(precio*100).toFixed(1)};
+          })}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="h" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} interval={2}/><YAxis yAxisId="kw" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} unit="kW"/><YAxis yAxisId="pr" orientation="right" tick={{fill:p.tx2,fontSize:7}} axisLine={false} tickLine={false} unit="c"/><Tooltip {...TT(p)}/><Area yAxisId="kw" type="monotone" dataKey="exc" fill={`${G}30`} stroke={G} strokeWidth={2} name="Excedente kW"/><Line yAxisId="kw" type="monotone" dataKey="con" stroke={A} strokeWidth={1.5} dot={false} name="Consumo kW"/><Line yAxisId="pr" type="monotone" dataKey="precio" stroke={D} strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="OMIE c/kWh"/></ComposedChart></ResponsiveContainer>
+          <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:4}}>{[["Excedente",G],["Consumo",A],["Precio OMIE",D]].map(([l,c])=><span key={l} style={{fontSize:8,display:"flex",alignItems:"center",gap:3,color:p.tx2}}><span style={{width:8,height:3,borderRadius:1,background:c,display:"inline-block"}}/>{l}</span>)}</div>
+        </Cd>
+      </div>
+
+      {/* Strategy decisions for surplus */}
+      <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12,marginBottom:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:12,fontWeight:600}}>Decisiones IA sobre Excedentes - Sabado Tipo</span><Bg text="Ingreso estimado: 11.80" color={G}/></div>
+        <div className="g3" style={{gap:6}}>
+          {[
+            {h:"07:00-09:00",ic:BatteryCharging,c:P,acc:"FV a bateria",desc:"Produccion FV aun baja (15-30kW). Toda la FV va a cargar bateria antes de que suba el excedente. SoC 40% a 65%.",valor:"0 vertido"},
+            {h:"09:00-11:00",ic:Battery,c:P,acc:"Bateria al 100%",desc:"FV sube a 60kW, consumo solo 22kW. Excedente carga bateria hasta 100%. El resto empieza a verter a red.",valor:"+1.20"},
+            {h:"11:00-14:00",ic:TrendingUp,c:G,acc:"Vertido maximo a red",desc:"FV en pico (85-92kW), consumo 25kW, bateria llena. Excedente de 60kW vertido a red. OMIE en 0.06-0.08/kWh.",valor:"+5.40"},
+            {h:"14:00-17:00",ic:TrendingUp,c:W,acc:"Vertido + reserva",desc:"FV baja gradualmente. El orquestador reserva 20% bateria para punta de la tarde (OMIE a 0.15). Resto vierte.",valor:"+3.20"},
+            {h:"17:00-20:00",ic:Zap,c:D,acc:"Descarga en punta",desc:"OMIE sube a 0.15-0.20/kWh. En vez de verter a 0.06, descargamos bateria y vendemos a precio punta. Diferencial: +0.12/kWh.",valor:"+2.00"},
+            {h:"20:00-00:00",ic:Plug,c:A,acc:"Red valle + precarga",desc:"Sin FV. Compramos red a 0.04/kWh para consumo nocturno y precarga de bateria para el domingo.",valor:"-0.80"},
+          ].map((d,i)=>{const Ic=d.ic;return(
+            <div key={i} style={{padding:10,borderRadius:6,border:`1px solid ${p.bd}`,background:p.sf2}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                <div style={{width:26,height:26,borderRadius:6,background:`${d.c}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic size={13} color={d.c}/></div>
+                <div><div style={{fontSize:10,fontWeight:700,color:d.c}}>{d.h}</div><div style={{fontSize:10,fontWeight:600}}>{d.acc}</div></div>
+                <span style={{marginLeft:"auto",fontSize:12,fontWeight:700,color:d.valor.startsWith("-")?D:G}}>{d.valor}</span>
+              </div>
+              <div style={{fontSize:9,color:p.tx2,lineHeight:1.4}}>{d.desc}</div>
+            </div>
+          )})}
+        </div>
+      </Cd>
+
+      {/* Revenue summary + comparison */}
+      <div className="g2" style={{marginBottom:8}}>
+        <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
+          <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Ingresos Mensuales por Excedentes</div>
+          <ResponsiveContainer width="100%" height={120}><BarChart data={[
+            {m:"Oct",comp:120,venta:45},{m:"Nov",comp:95,venta:35},{m:"Dic",comp:80,venta:28},
+            {m:"Ene",comp:85,venta:30},{m:"Feb",comp:110,venta:42},{m:"Mar",comp:145,venta:55}
+          ]}><CartesianGrid strokeDasharray="3 3" stroke={p.bd} vertical={false}/><XAxis dataKey="m" tick={{fill:p.tx2,fontSize:9}} axisLine={false} tickLine={false}/><YAxis tick={{fill:p.tx2,fontSize:8}} axisLine={false} tickLine={false} unit=" EUR"/><Tooltip {...TT(p)}/><Bar dataKey="comp" fill={G} radius={[0,0,0,0]} name="Compensacion"/><Bar dataKey="venta" fill={A} radius={[3,3,0,0]} name="Venta punta"/></BarChart></ResponsiveContainer>
+          <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:4}}>{[["Compensacion simplificada",G],["Venta en punta (bateria)",A]].map(([l,c])=><span key={l} style={{fontSize:8,display:"flex",alignItems:"center",gap:3,color:p.tx2}}><span style={{width:8,height:8,borderRadius:2,background:c,display:"inline-block"}}/>{l}</span>)}</div>
+        </Cd>
+        <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12}}>
+          <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>Resumen Anual Excedentes</div>
+          {[
+            {l:"Excedentes totales vertidos",v:"17,520 kWh",c:W},
+            {l:"Compensacion en factura",v:"1,051 EUR",d:"17,520 kWh x 0.06 EUR/kWh medio",c:G},
+            {l:"Ingreso extra por venta punta",v:"686 EUR",d:"Bateria descargada en OMIE punta fines de semana",c:A},
+            {l:"Vertido evitable (a bateria)",v:"4,380 kWh",d:"Con 2a bateria capturas 250 EUR/ano mas",c:D},
+          ].map((r,i)=>(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:i<3?`1px solid ${p.bd}`:"none"}}>
+              <div><div style={{fontSize:10,fontWeight:600}}>{r.l}</div>{r.d&&<div style={{fontSize:8,color:p.tx2}}>{r.d}</div>}</div>
+              <span style={{fontSize:13,fontWeight:700,color:r.c}}>{r.v}</span>
+            </div>
+          ))}
+          <div style={{marginTop:8,padding:8,borderRadius:5,background:`${G}06`,border:`1px solid ${G}12`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div><div style={{fontSize:11,fontWeight:700,color:G}}>Total ingresos anuales excedentes</div><div style={{fontSize:9,color:p.tx2}}>Compensacion + venta punta con bateria</div></div>
+              <div style={{fontSize:22,fontWeight:800,color:G}}>1,737 EUR</div>
+            </div>
+          </div>
+        </Cd>
+      </div>
+
+      {/* AI recommendation */}
+      <Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:12,borderLeft:`4px solid ${G}`}}>
+        <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+          <div style={{width:28,height:28,borderRadius:7,background:`${G}12`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}><Lightbulb size={14} color={G}/></div>
+          <div>
+            <div style={{fontSize:12,fontWeight:700,marginBottom:4}}>Recomendacion IA: Maximizar ingresos por excedentes</div>
+            <div style={{fontSize:10,color:p.tx2,lineHeight:1.5}}>
+              El analisis de 6 meses muestra que los <strong>fines de semana generas un 48-55% de excedente</strong> que actualmente se compensa a precio pool (0.06 EUR/kWh de media). Con la estrategia de Seinon de <strong>almacenar en bateria y vender en punta</strong>, el ingreso medio sube a 0.14 EUR/kWh — un <strong>133% mas por cada kWh excedente</strong>. Si instalas una 2a bateria de 5kWh (coste ~3,500 EUR), capturas 4,380 kWh adicionales de excedente que hoy se pierden a precio bajo, generando <strong>250 EUR/ano extra</strong>. Payback de la bateria extra: 14 meses considerando solo excedentes.
+            </div>
+          </div>
+        </div>
+      </Cd>
+    </div>
   </>);
 }
 
