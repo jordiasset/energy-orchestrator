@@ -864,194 +864,101 @@ function PgReport(p){
   const genPDF=async()=>{
     const{jsPDF}=await import("jspdf");
     const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-    const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
-    const M=14,RW=W-2*M;let y=0;
+    const W=doc.internal.pageSize.getWidth(),PH=doc.internal.pageSize.getHeight();
+    const M=14,RW=W-2*M,BOT=PH-18;let y=0,pg=1;
     const c=(r,g,b)=>doc.setTextColor(r,g,b);
-    const f=(x,yy,ww,hh,r,g,b)=>{doc.setFillColor(r,g,b);doc.rect(x,yy,ww,hh,"F")};
+    const fl=(x,yy,ww,hh,r,g,b)=>{doc.setFillColor(r,g,b);doc.rect(x,yy,ww,hh,"F")};
     const brd=(x,yy,ww,hh,r,g,b)=>{doc.setDrawColor(r,g,b);doc.setLineWidth(.3);doc.rect(x,yy,ww,hh,"S")};
-    const ln=(yy)=>{doc.setDrawColor(220,225,230);doc.setLineWidth(.2);doc.line(M,yy,W-M,yy)};
-    const sect=(icon,title,color)=>{y+=3;f(M,y,3,8,color[0],color[1],color[2]);c(color[0],color[1],color[2]);doc.setFontSize(11);doc.setFont("helvetica","bold");doc.text(`  ${icon}  ${title}`,M+4,y+6);y+=12;};
-    const tRow=(cols,widths,yy,opts={})=>{const{bold,bg:bgc,head,color:clr}=opts;if(bgc)f(M,yy,RW,7,bgc[0],bgc[1],bgc[2]);if(head){doc.setDrawColor(0,120,212);doc.setLineWidth(.5);doc.line(M,yy+7,W-M,yy+7)}let x=M;cols.forEach((t,i)=>{doc.setFont("helvetica",bold||head?"bold":"normal");doc.setFontSize(head?7.5:8);c(clr?clr[0]:head?255:50,clr?clr[1]:head?255:50,clr?clr[2]:head?255:50);doc.text(String(t),x+2,yy+5);x+=widths[i]});return yy+7};
-    const footer=(pg,total)=>{doc.setDrawColor(220,225,230);doc.setLineWidth(.2);doc.line(M,H-15,W-M,H-15);c(160,165,170);doc.setFontSize(6.5);doc.setFont("helvetica","normal");doc.text("Seinon IA — Orquestacion Energetica Inteligente",M,H-11);doc.text("Certex Innova S.L. — Planta 4 — Industrial Shields RPi PLC 21+",M,H-7.5);doc.text(`Generado: ${fecha}`,W-M-50,H-11);doc.text(`Pagina ${pg} de ${total}`,W-M-22,H-7.5);};
+    const lnY=(yy)=>{doc.setDrawColor(220,225,230);doc.setLineWidth(.2);doc.line(M,yy,W-M,yy)};
+    const footer=()=>{doc.setDrawColor(220,225,230);doc.setLineWidth(.2);doc.line(M,PH-15,W-M,PH-15);c(160,165,170);doc.setFontSize(6.5);doc.setFont("helvetica","normal");doc.text("Seinon IA — Orquestacion Energetica Inteligente — Certex Innova S.L. — Planta 4",M,PH-11);doc.text(`Generado: ${fecha} | Pagina ${pg}`,W-M-45,PH-11)};
+    const newPg=()=>{footer();doc.addPage();pg++;y=12};
+    const chk=(need)=>{if(y+need>BOT)newPg()};
+    const sect=(num,title,color)=>{chk(20);y+=4;fl(M,y,3,8,color[0],color[1],color[2]);c(color[0],color[1],color[2]);doc.setFontSize(11);doc.setFont("helvetica","bold");doc.text(`${num}  ${title}`,M+5,y+6);y+=12};
+    const tHead=(cols,widths,clr)=>{chk(10);fl(M,y,RW,7,clr[0],clr[1],clr[2]);let x=M;cols.forEach((t,i)=>{c(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.text(String(t),x+2,y+5);x+=widths[i]});y+=7};
+    const tRow=(cols,widths,opts={})=>{chk(8);const{bg:bgc,clr}=opts;if(bgc)fl(M,y,RW,7,bgc[0],bgc[1],bgc[2]);doc.setDrawColor(235,238,240);doc.setLineWidth(.15);doc.line(M,y+7,W-M,y+7);let x=M;cols.forEach((t,i)=>{doc.setFont("helvetica","normal");doc.setFontSize(8);c(clr?clr[0]:50,clr?clr[1]:50,clr?clr[2]:55);doc.text(String(t),x+2,y+5);x+=widths[i]});y+=7};
+    const tTotal=(cols,widths,clr)=>{chk(10);fl(M,y,RW,9,clr[0],clr[1],clr[2]);let x=M;cols.forEach((t,i)=>{c(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text(String(t),x+3,y+6);x+=widths[i]});y+=12};
 
-    // ===== PAGE 1 =====
-    // Header bar
-    f(0,0,W,32,0,100,190);
-    f(0,32,W,2,0,78,156);
-    c(255,255,255);doc.setFontSize(7);doc.setFont("helvetica","normal");
-    doc.text("REPORTE DIARIO",M,8);
-    doc.setFontSize(20);doc.setFont("helvetica","bold");
-    doc.text("Seinon IA — Briefing Matinal",M,18);
-    doc.setFontSize(9);doc.setFont("helvetica","normal");
-    doc.text(fecha,M,25);
-    // Header KPIs right side
-    f(W-75,6,65,22,255,255,255);brd(W-75,6,65,22,0,80,170);
-    c(0,100,190);doc.setFontSize(7);doc.setFont("helvetica","normal");
-    doc.text("AHORRO PREVISTO HOY",W-72,12);
-    doc.setFontSize(18);doc.setFont("helvetica","bold");c(15,123,15);
-    doc.text("29.40 EUR",W-72,22);
+    // HEADER
+    fl(0,0,W,32,0,100,190);fl(0,32,W,2,0,78,156);
+    c(255,255,255);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("REPORTE DIARIO",M,8);
+    doc.setFontSize(20);doc.setFont("helvetica","bold");doc.text("Seinon IA — Briefing Matinal",M,18);
+    doc.setFontSize(9);doc.setFont("helvetica","normal");doc.text(fecha,M,25);
+    fl(W-75,6,65,22,255,255,255);brd(W-75,6,65,22,0,80,170);
+    c(0,100,190);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("AHORRO PREVISTO HOY",W-72,12);
+    doc.setFontSize(18);doc.setFont("helvetica","bold");c(15,123,15);doc.text("29.40 EUR",W-72,22);
     y=40;
-
-    // Client info bar
-    f(M,y,RW,10,245,247,250);brd(M,y,RW,10,220,225,230);
+    fl(M,y,RW,10,245,247,250);brd(M,y,RW,10,220,225,230);
     c(80,85,90);doc.setFontSize(7.5);doc.setFont("helvetica","normal");
-    doc.text("Cliente: Certex Innova S.L.",M+3,y+4);
-    doc.text("Instalacion: Planta 4",M+60,y+4);
-    doc.text("Potencia: 200 kW",M+110,y+4);
-    doc.text("Tarifa: 6.1TD Indexada",M+3,y+8.5);
-    doc.text("FV: 85 kWp",M+60,y+8.5);
-    doc.text("Bateria: BYD 10.2 kWh",M+110,y+8.5);
+    doc.text("Cliente: Certex Innova S.L.",M+3,y+4);doc.text("Instalacion: Planta 4",M+60,y+4);doc.text("Potencia: 200 kW",M+110,y+4);
+    doc.text("Tarifa: 6.1TD Indexada",M+3,y+8.5);doc.text("FV: 85 kWp",M+60,y+8.5);doc.text("Bateria: BYD 10.2 kWh",M+110,y+8.5);
     y+=14;
 
-    // 1. RESUMEN EJECUTIVO
+    // 1. RESUMEN
     sect("1.","Resumen Ejecutivo",[0,100,190]);
-    f(M,y,RW,24,248,250,252);brd(M,y,RW,24,220,225,230);
+    fl(M,y,RW,22,248,250,252);brd(M,y,RW,22,220,225,230);
     c(40,42,45);doc.setFontSize(8.5);doc.setFont("helvetica","normal");
-    const summ="Hoy es un dia favorable para el ahorro energetico. Prevision meteorologica: cielo despejado, produccion FV estimada 680 kWh (92 kW pico a las 13:00). Precios OMIE: spread alto de 0.18 EUR/kWh entre valle (0.03) y punta (0.21) — arbitraje con bateria muy rentable. El orquestador ha generado un schedule optimo que prioriza carga nocturna, autoconsumo FV total 10-15h, y descarga de bateria en pico 18-22h. Ahorro estimado: 29.40 EUR (vs 14.20 EUR media semanal).";
-    doc.text(doc.splitTextToSize(summ,RW-6),M+3,y+5);y+=28;
+    const summ="Hoy es un dia favorable. Prevision: cielo despejado, FV 680 kWh (92kW pico 13:00). OMIE: spread 0.18 EUR/kWh (valle 0.03, punta 0.21). El orquestador prioriza carga nocturna, autoconsumo FV 10-15h, descarga bateria 18-22h. Ahorro estimado: 29.40 EUR (vs 14.20 media semanal).";
+    doc.text(doc.splitTextToSize(summ,RW-6),M+3,y+5);y+=26;
 
-    // 2. PLAN DE ORQUESTACION
+    // 2. SCHEDULE
     sect("2.","Plan de Orquestacion — Schedule Optimo",[15,123,15]);
-    // Table header
     const schW=[24,30,38,42,24,24];
-    y=tRow(["Periodo","Fuente","Accion","Razon","Ahorro","Estado"],schW,y,{head:true,bg:[0,100,190]});
-    const schRows=[
-      ["00:00-06:00","Red Valle","Cargar bateria","OMIE a 0.03 EUR/kWh","2.40 EUR","Ejecutado"],
-      ["07:00-10:00","FV + Red","Autoconsumo FV","FV creciente, cubrir base","1.80 EUR","Ejecutado"],
-      ["10:00-15:00","100% FV","FV a Consumo+Bat","FV cubre toda la demanda","8.50 EUR","En curso"],
-      ["15:00-18:00","FV + Bat","Descarga parcial","FV baja, OMIE empieza a subir","3.20 EUR","Programado"],
-      ["18:00-22:00","Bateria","Descarga maxima","Pico OMIE 0.22 EUR/kWh","12.60 EUR","Programado"],
-      ["22:00-00:00","Red Valle","Precarga nocturna","OMIE baja a 0.05 EUR/kWh","0.90 EUR","Programado"],
-    ];
-    schRows.forEach((r,i)=>{y=tRow(r,schW,y,{bg:i%2===0?[252,253,255]:[255,255,255]})});
-    // Total row
-    f(M,y,RW,8,15,123,15);c(255,255,255);doc.setFontSize(9);doc.setFont("helvetica","bold");
-    doc.text("TOTAL AHORRO ESTIMADO HOY",M+3,y+5.5);doc.text("29.40 EUR",W-M-28,y+5.5);y+=12;
+    tHead(["Periodo","Fuente","Accion","Razon","Ahorro","Estado"],schW,[0,100,190]);
+    [["00-06h","Red Valle","Cargar bateria","OMIE 0.03 EUR/kWh","2.40 EUR","Ejecutado"],["07-10h","FV + Red","Autoconsumo FV","FV creciente","1.80 EUR","Ejecutado"],["10-15h","100% FV","FV a Consumo+Bat","FV cubre demanda","8.50 EUR","En curso"],["15-18h","FV + Bat","Descarga parcial","FV baja, OMIE sube","3.20 EUR","Programado"],["18-22h","Bateria","Descarga maxima","Pico OMIE 0.22","12.60 EUR","Programado"],["22-00h","Red Valle","Precarga nocturna","OMIE 0.05","0.90 EUR","Programado"]].forEach((r,i)=>tRow(r,schW,{bg:i%2===0?[252,253,255]:[255,255,255]}));
+    tTotal(["","","","TOTAL AHORRO HOY","29.40 EUR",""],schW,[15,123,15]);
 
-    // Narratives
-    const narrs=[
-      {t:"Madrugada (00-06h)",txt:"OMIE a 0.03 EUR/kWh. Carga bateria de "+p.socN+"% a 95%. Coste: ~1.80 EUR. Esta energia valdra 12.60 EUR descargada en punta.",clr:[0,100,190]},
-      {t:"Mediodia (10-15h)",txt:"Cielo despejado, FV 92 kW pico. Red desconectada. 100% autoconsumo + excedente a bateria. Ahorro vs compra red: 8.50 EUR.",clr:[247,99,12]},
-      {t:"Pico tarde (18-22h)",txt:"OMIE 0.22-0.24 EUR/kWh. Descarga total bateria. Sin orquestador: 14.20 EUR. Con Seinon: 1.60 EUR. Ahorro neto: 12.60 EUR.",clr:[196,43,28]},
-    ];
-    narrs.forEach(n=>{
-      f(M,y,.8,9,n.clr[0],n.clr[1],n.clr[2]);
-      c(n.clr[0],n.clr[1],n.clr[2]);doc.setFontSize(8);doc.setFont("helvetica","bold");
-      doc.text(n.t,M+3,y+4);
-      c(60,62,65);doc.setFontSize(7.5);doc.setFont("helvetica","normal");
-      doc.text(doc.splitTextToSize(n.txt,RW-8),M+3,y+8);y+=12;
-    });
+    [{t:"Madrugada (00-06h)",txt:"OMIE 0.03. Carga bat "+p.socN+"% a 95%. Coste ~1.80 EUR. Valdra 12.60 en punta.",clr:[0,100,190]},{t:"Mediodia (10-15h)",txt:"Cielo despejado, FV 92kW. Red off. Autoconsumo total. Ahorro: 8.50 EUR.",clr:[247,99,12]},{t:"Pico (18-22h)",txt:"OMIE 0.22-0.24. Descarga bat. Sin Seinon: 14.20. Con: 1.60. Ahorro: 12.60.",clr:[196,43,28]}].forEach(n=>{chk(12);fl(M,y,.8,8,n.clr[0],n.clr[1],n.clr[2]);c(n.clr[0],n.clr[1],n.clr[2]);doc.setFontSize(8);doc.setFont("helvetica","bold");doc.text(n.t,M+3,y+4);c(60,62,65);doc.setFontSize(7.5);doc.setFont("helvetica","normal");doc.text(n.txt,M+3,y+8);y+=11});
 
     // 3. ALERTAS
-    y+=1;sect("3.","Alertas que Requieren Atencion",[196,43,28]);
+    sect("3.","Alertas que Requieren Atencion",[196,43,28]);
     const alW=[18,48,70,46];
-    y=tRow(["Prioridad","Alerta","Descripcion","Accion Recomendada"],alW,y,{head:true,bg:[196,43,28]});
-    const alRows=[
-      ["ALTA","Consumo nocturno L3","02-05h +34% vs media. Equipo no apagado.","Revisar apagado auto. -420 EUR/mes"],
-      ["ALTA","Compresor degradado","Consumo +22% en 6m. Fallo en 45-60d.","Inspeccion rodamientos. ~2,400 EUR"],
-      ["MEDIA","Cos phi bajo","0.85 en 09-14h. Tendencia 3 semanas.","Ampliar condensadores. 800 EUR"],
-    ];
-    alRows.forEach((r,i)=>{
-      const isAlta=r[0]==="ALTA";
-      y=tRow(r,alW,y,{bg:isAlta?[255,242,242]:[255,248,240],color:i<2?[180,30,20]:[200,120,10]});
-    });y+=4;
+    tHead(["Prior.","Alerta","Descripcion","Accion"],alW,[196,43,28]);
+    [["ALTA","Consumo nocturno L3","02-05h +34% vs media. Equipo no apagado.","Revisar apagado auto. -420 EUR/m"],["ALTA","Compresor degradado","Consumo +22% en 6m. Fallo en 45-60d.","Inspeccion rodamientos. ~2,400 EUR"],["MEDIA","Cos phi bajo","0.85 en 09-14h. Tendencia 3 semanas.","Ampliar condensadores. 800 EUR"]].forEach((r,i)=>tRow(r,alW,{bg:i<2?[255,242,242]:[255,248,240],clr:i<2?[180,30,20]:[200,120,10]}));
+    y+=4;
 
-    // 4. PREVISION SOLAR
+    // 4. PREVISION
     sect("4.","Prevision Meteorologica y Solar (5 dias)",[247,99,12]);
     const slW=[25,25,25,52,55];
-    y=tRow(["Dia","Temp","Nubes","Produccion FV Est.","Estrategia Seinon"],slW,y,{head:true,bg:[247,99,12]});
-    [
-      ["Hoy","22 C","10%","680 kWh (92 kW pico)","Autoconsumo maximo + vertido"],
-      ["Manana","19 C","40%","520 kWh","Precarga nocturna extra"],
-      ["Pasado","16 C","80%","180 kWh","Reservar bateria, comprar valle"],
-      ["Jueves","18 C","55%","380 kWh","Modo hibrido FV+Red"],
-      ["Viernes","24 C","5%","720 kWh (dia optimo)","Vertido excedentes + arbitraje"],
-    ].forEach((r,i)=>{y=tRow(r,slW,y,{bg:i%2===0?[255,250,245]:[255,255,255]})});y+=4;
+    tHead(["Dia","Temp","Nubes","Produccion FV","Estrategia"],slW,[247,99,12]);
+    [["Hoy","22 C","10%","680 kWh (92kW pico)","Autoconsumo max + vertido"],["Manana","19 C","40%","520 kWh","Precarga nocturna extra"],["Pasado","16 C","80%","180 kWh","Reservar bat, comprar valle"],["Jueves","18 C","55%","380 kWh","Hibrido FV+Red"],["Viernes","24 C","5%","720 kWh (optimo)","Vertido + arbitraje"]].forEach((r,i)=>tRow(r,slW,{bg:i%2===0?[255,250,245]:[255,255,255]}));
+    y+=4;
 
     // 5. KPIs
     sect("5.","KPIs de la Instalacion",[100,80,200]);
     const kpW=[46,46,46,44];
-    y=tRow(["Indicador","Valor Actual","Objetivo","Estado"],kpW,y,{head:true,bg:[100,80,200]});
-    [
-      ["Consumo ayer","14,200 kWh","< 15,000 kWh","OK"],
-      ["Autoconsumo FV","62%","70%","Mejorable (+8%)"],
-      ["SoH Bateria","96.5%","> 90%","OK"],
-      ["Cos phi medio","0.94","> 0.95","Atencion"],
-      ["Ahorro acumulado mes","824 EUR","900 EUR","En camino (91%)"],
-      ["Uptime sistema","99.8%","> 99.5%","OK"],
-      ["Anomalias detectadas","5 este mes","< 3","Atencion"],
-      ["CO2 evitado","3.8 tCO2","4.0 tCO2","En camino (95%)"],
-    ].forEach((r,i)=>{y=tRow(r,kpW,y,{bg:i%2===0?[250,248,255]:[255,255,255]})});
+    tHead(["Indicador","Valor","Objetivo","Estado"],kpW,[100,80,200]);
+    [["Consumo ayer","14,200 kWh","< 15,000","OK"],["Autoconsumo FV","62%","70%","Mejorable"],["SoH Bateria","96.5%","> 90%","OK"],["Cos phi","0.94","> 0.95","Atencion"],["Ahorro mes","824 EUR","900 EUR","91%"],["Uptime","99.8%","> 99.5%","OK"],["Anomalias IA","5","< 3","Atencion"],["CO2 evitado","3.8 tCO2","4.0","95%"]].forEach((r,i)=>tRow(r,kpW,{bg:i%2===0?[250,248,255]:[255,255,255]}));
+    y+=4;
 
-    footer(1,2);
-
-    // ===== PAGE 2 =====
-    doc.addPage();y=12;
-
-    // 6. FACTURACION
-    sect("6.","Analisis Economico Mensual — Marzo 2026",[0,100,190]);
+    // 6. ECONOMICO
+    sect("6.","Analisis Economico — Marzo 2026",[0,100,190]);
     const ecW=[60,35,35,52];
-    y=tRow(["Concepto","Sin Seinon","Con Seinon","Diferencia"],ecW,y,{head:true,bg:[0,100,190]});
-    [
-      ["Energia consumida (kWh)","20,400","20,400","0 (misma produccion)"],
-      ["Coste energia red","4,872 EUR","3,280 EUR","-1,592 EUR (-33%)"],
-      ["Autoconsumo FV (valor)","0 EUR","1,194 EUR","+1,194 EUR"],
-      ["Arbitraje bateria","0 EUR","398 EUR","+398 EUR"],
-      ["Compensacion excedentes","0 EUR","145 EUR","+145 EUR"],
-      ["Optimiz. potencia contratada","0 EUR","85 EUR","+85 EUR"],
-      ["Coste Seinon (SaaS + mant.)","0 EUR","-250 EUR","-250 EUR"],
-    ].forEach((r,i)=>{y=tRow(r,ecW,y,{bg:i%2===0?[248,250,252]:[255,255,255]})});
-    f(M,y,RW,9,15,123,15);c(255,255,255);doc.setFontSize(9);doc.setFont("helvetica","bold");
-    doc.text("AHORRO NETO MENSUAL",M+3,y+6);doc.text("824 EUR",M+97,y+6);doc.text("-17% vs sin Seinon",W-M-40,y+6);y+=14;
+    tHead(["Concepto","Sin Seinon","Con Seinon","Diferencia"],ecW,[0,100,190]);
+    [["Energia (kWh)","20,400","20,400","0"],["Coste red","4,872 EUR","3,280 EUR","-1,592 (-33%)"],["Autoconsumo FV","0 EUR","1,194 EUR","+1,194"],["Arbitraje bat","0 EUR","398 EUR","+398"],["Compensacion exc.","0 EUR","145 EUR","+145"],["Optim. potencia","0 EUR","85 EUR","+85"],["Coste Seinon","0 EUR","-250 EUR","-250"]].forEach((r,i)=>tRow(r,ecW,{bg:i%2===0?[248,250,252]:[255,255,255]}));
+    tTotal(["AHORRO NETO MES","","824 EUR","-17% vs sin Seinon"],ecW,[15,123,15]);
 
     // 7. EXCEDENTES
     sect("7.","Gestion de Excedentes y Venta a Red",[15,123,15]);
     const exW=[52,30,30,30,40];
-    y=tRow(["Concepto","kWh","EUR/kWh","Ingreso","Estrategia"],exW,y,{head:true,bg:[15,123,15]});
-    [
-      ["Autoconsumo directo","9,180","0.13 evitado","1,194 EUR","FV a consumo 10-15h"],
-      ["Almacenado en bateria","6,120","0.14 arbitraje","857 EUR","Carga FV, descarga punta"],
-      ["Vertido a red (compensacion)","3,600","0.06 pool","216 EUR","Excedente fines de semana"],
-      ["Vertido punta (bateria)","1,620","0.14 punta","227 EUR","Descarga bat en OMIE punta"],
-    ].forEach((r,i)=>{y=tRow(r,exW,y,{bg:i%2===0?[240,250,240]:[255,255,255]})});
-    f(M,y,RW,8,15,123,15);c(255,255,255);doc.setFontSize(8.5);doc.setFont("helvetica","bold");
-    doc.text("TOTAL VALOR GENERACION PROPIA ANUAL",M+3,y+5.5);doc.text("2,494 EUR",W-M-30,y+5.5);y+=13;
+    tHead(["Concepto","kWh","EUR/kWh","Ingreso","Estrategia"],exW,[15,123,15]);
+    [["Autoconsumo directo","9,180","0.13","1,194 EUR","FV a consumo"],["Almacenado bat","6,120","0.14","857 EUR","Carga FV descarga punta"],["Vertido compensacion","3,600","0.06","216 EUR","Exc. fines semana"],["Vertido punta","1,620","0.14","227 EUR","Bat en OMIE punta"]].forEach((r,i)=>tRow(r,exW,{bg:i%2===0?[240,250,240]:[255,255,255]}));
+    tTotal(["TOTAL VALOR ANUAL","","","2,494 EUR",""],exW,[15,123,15]);
 
     // 8. TAREAS
-    sect("8.","Tareas Recomendadas para Hoy",[15,123,15]);
+    sect("8.","Tareas Recomendadas para Hoy",[60,65,70]);
     const tkW=[12,70,30,30,40];
-    y=tRow(["","Tarea","Area","Tiempo","Prioridad"],tkW,y,{head:true,bg:[60,65,70]});
-    [
-      ["☐","Revisar apagado automatico Linea 3","Produccion","30 min","URGENTE"],
-      ["☐","Programar inspeccion compresor ppal","Mantenim.","Llamar","IMPORTANTE"],
-      ["☐","Verificar compensacion excedentes Feb","Admin","15 min","NORMAL"],
-      ["☑","Orquestacion automatica Seinon IA","Sistema","24/7","AUTOMATICO"],
-    ].forEach((r,i)=>{
-      const isAuto=r[4]==="AUTOMATICO";
-      y=tRow(r,tkW,y,{bg:isAuto?[240,250,240]:i%2===0?[252,252,255]:[255,255,255]});
-    });y+=6;
+    tHead(["","Tarea","Area","Tiempo","Prioridad"],tkW,[60,65,70]);
+    [["[ ]","Revisar apagado auto Linea 3","Produccion","30 min","URGENTE"],["[ ]","Inspeccion compresor ppal","Mantenim.","Llamar","IMPORTANTE"],["[ ]","Verificar compensacion exc.","Admin","15 min","NORMAL"],["[x]","Orquestacion Seinon IA","Sistema","24/7","AUTO"]].forEach((r,i)=>tRow(r,tkW,{bg:i===3?[240,250,240]:i%2===0?[252,252,255]:[255,255,255]}));
+    y+=6;
 
-    // 9. RESUMEN FINAL
-    f(M,y,RW,28,248,250,252);brd(M,y,RW,28,200,205,210);
-    c(0,100,190);doc.setFontSize(10);doc.setFont("helvetica","bold");
-    doc.text("Resumen del Dia",M+3,y+6);
-    c(50,52,55);doc.setFontSize(8);doc.setFont("helvetica","normal");
-    const rr=[["Ahorro hoy","29.40 EUR"],["Ahorro acumulado mes","824 EUR"],["Ahorro proyectado anual","9,894 EUR"],["Alertas pendientes","3 (2 alta, 1 media)"],["Autoconsumo FV","62%"],["SoH Bateria","96.5%"]];
-    rr.forEach((r,i)=>{
-      const rx=M+3+(i%3)*62,ry=y+10+Math.floor(i/3)*8;
-      c(120,125,130);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text(r[0],rx,ry);
-      c(30,32,35);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(r[1],rx,ry+4);
-    });
-    y+=34;
-
-    // Signature line
-    ln(y);y+=6;
+    // 9. RESUMEN
+    chk(35);fl(M,y,RW,26,248,250,252);brd(M,y,RW,26,200,205,210);
+    c(0,100,190);doc.setFontSize(10);doc.setFont("helvetica","bold");doc.text("Resumen del Dia",M+3,y+6);
+    [["Ahorro hoy","29.40 EUR"],["Ahorro mes","824 EUR"],["Anual proy.","9,894 EUR"],["Alertas","3 pendientes"],["Autoconsumo","62%"],["SoH Bat","96.5%"]].forEach((r,i)=>{const rx=M+3+(i%3)*62,ry=y+10+Math.floor(i/3)*8;c(120,125,130);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text(r[0],rx,ry);c(30,32,35);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(r[1],rx,ry+4)});
+    y+=32;chk(12);lnY(y);y+=4;
     c(120,125,130);doc.setFontSize(7);doc.setFont("helvetica","italic");
-    doc.text("Este reporte ha sido generado automaticamente por Seinon IA a las 06:00.",M,y);
-    doc.text("Los datos se actualizan con cada sesion intradiaria del mercado OMIE.",M,y+4);
-    doc.text("Para consultas: soporte@seinon.com — Dashboard: energy-orchestrator.vercel.app",M,y+8);
-
-    footer(2,2);
+    doc.text("Generado automaticamente por Seinon IA a las 06:00. Dashboard: energy-orchestrator.vercel.app",M,y);
+    footer();
     doc.save(`Reporte_Seinon_${hoy.toISOString().slice(0,10)}.pdf`);
   };
 
