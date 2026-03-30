@@ -418,8 +418,9 @@ function Landing({onLogin}){
 
       {/* FOOTER */}
       <footer style={{padding:"30px 24px",background:"#111",color:"#888",fontSize:11,textAlign:"center"}}>
-        <div style={{marginBottom:6}}><SeinonLogo size="sm" dark={true}/></div>
-        <div>Certex Innova S.L. — Industrial Shields RPi PLC 21+ — FlexMeasures</div>
+        <div style={{marginBottom:6}}><SeinonLogo size="md" dark={true}/></div>
+        <div>Orquestacion Energetica Inteligente</div>
+        <div style={{marginTop:4}}>Certex Innova S.L.</div>
       </footer>
 
       {/* LOGIN MODAL */}
@@ -492,18 +493,9 @@ function TT(p){return{contentStyle:{background:"#fff",border:`1px solid ${p.bd}`
 function Hd({t,sub,children}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:8}}><div><h1 style={{fontSize:18,fontWeight:700,margin:0}}>{t}</h1>{sub&&<p style={{fontSize:11,color:"#666",margin:"2px 0 0"}}>{sub}</p>}</div>{children}</div>}
 function Mi({ic:Ic,l,v,u,color,sub,p}){return(<Cd s={p.sf} sh={p.sh} bd={p.bd} style={{padding:10}}><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}><div style={{width:24,height:24,borderRadius:5,background:`${color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><Ic size={12} color={color}/></div><span style={{fontSize:9,color:p.tx2}}>{l}</span></div><div style={{fontSize:17,fontWeight:700,letterSpacing:-.5}}>{v}{u&&<span style={{fontSize:10,fontWeight:400,color:p.tx2}}> {u}</span>}</div>{sub&&<Bg text={sub} color={color}/>}</Cd>)}
 function SeinonLogo({size="md",dark=false}){
-  const s=size==="sm"?{fs:18,pw:140,ph:12,sw:1.2,sub:false}:size==="lg"?{fs:54,pw:400,ph:30,sw:2.2,sub:true}:size==="xl"?{fs:58,pw:420,ph:32,sw:2.2,sub:true}:{fs:28,pw:220,ph:16,sw:1.5,sub:false};
+  const fs=size==="sm"?16:size==="lg"?42:size==="xl"?54:26;
   const tc=dark?"#fff":"var(--color-text-primary,#111)";
-  return(
-    <div style={{display:"inline-flex",flexDirection:"column",alignItems:"center"}}>
-      <div style={{fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",fontSize:s.fs,fontWeight:800,letterSpacing:s.fs>30?-2.5:-1.5,lineHeight:1,color:tc}}>se<span style={{color:"#0078D4"}}>i</span>non</div>
-      <svg width={s.pw} height={s.ph} viewBox={`0 0 ${s.pw} ${s.ph}`} fill="none" style={{marginTop:s.fs>30?4:2}}>
-        <defs><linearGradient id={`slg-${size}`} x1="0" y1="0" x2={s.pw} y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#0078D4"/><stop offset="50%" stopColor="#00B4D8"/><stop offset="100%" stopColor="#0F7B0F"/></linearGradient></defs>
-        <polyline points={Array.from({length:Math.round(s.pw/4)+1},(_,i)=>{const x=i*4,mid=s.pw/2,h=s.ph/2,amp=h*.8,spread=s.pw*.08;const d=Math.abs(x-mid);const env=d<spread?Math.cos(d/spread*Math.PI/2):0;const wave=Math.sin((x-mid)/spread*Math.PI*2)*env;return`${x},${h-wave*amp}`}).join(" ")} stroke={`url(#slg-${size})`} strokeWidth={s.sw} strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-      {s.sub&&<div style={{fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",fontSize:10,letterSpacing:6,color:dark?"rgba(255,255,255,.6)":"var(--color-text-tertiary,#999)",fontWeight:500,marginTop:4}}>INTELLIGENT ENERGY</div>}
-    </div>
-  );
+  return <span style={{fontFamily:"'Segoe UI Variable','Segoe UI',system-ui,sans-serif",fontSize:fs,fontWeight:800,letterSpacing:fs>20?-2:-1,color:tc}}>se<span style={{color:"#0078D4"}}>i</span>non</span>;
 }
 
 // ========== 1. DASHBOARD ==========
@@ -894,21 +886,14 @@ function PgReport(p){
     fl(0,0,W,36,0,100,190);fl(0,36,W,2,0,78,156);
     c(255,255,255);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("REPORTE DIARIO",M,8);
     // Logo wordmark
-    doc.setFontSize(24);doc.setFont("helvetica","bold");
+    doc.setFontSize(26);doc.setFont("helvetica","bold");
     c(255,255,255);doc.text("se",M,22);
     const seW=doc.getTextWidth("se");
     c(100,200,255);doc.text("i",M+seW,22);
     const iW=doc.getTextWidth("i");
     c(255,255,255);doc.text("non",M+seW+iW,22);
-    // Pulse line under logo
-    const pw=doc.getTextWidth("seinon"),px=M,py=26;
-    doc.setDrawColor(100,200,255);doc.setLineWidth(.6);
-    doc.line(px,py,px+pw*.35,py);
-    const cx=px+pw*.43;
-    doc.line(px+pw*.35,py,cx-4,py-3);doc.line(cx-4,py-3,cx-1,py+3);doc.line(cx-1,py+3,cx+1,py-3);doc.line(cx+1,py-3,cx+4,py+3);doc.line(cx+4,py+3,px+pw*.57,py);
-    doc.setDrawColor(15,123,15);doc.line(px+pw*.57,py,px+pw,py);
-    // Subtitle
-    c(200,210,220);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("INTELLIGENT ENERGY",M,31);
+    // Date + subtitle
+    c(200,210,220);doc.setFontSize(9);doc.setFont("helvetica","normal");doc.text("Briefing Matinal — "+fecha,M,30);
     fl(W-75,6,65,26,255,255,255);brd(W-75,6,65,26,0,80,170);
     c(0,100,190);doc.setFontSize(7);doc.setFont("helvetica","normal");doc.text("AHORRO PREVISTO HOY",W-72,12);
     doc.setFontSize(18);doc.setFont("helvetica","bold");c(15,123,15);doc.text("29.40 EUR",W-72,24);
